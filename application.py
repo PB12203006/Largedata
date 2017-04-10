@@ -13,7 +13,9 @@ def hello():
 def feedback():
 	indicator = int(request.args.get('indicator',''))
 	print indicator
-	t=str(random.randint(0,100))
+
+	t=str(random.randint(0,100))   #t is the tweet we are going to display
+	
 	myvar={"text":t}
 	jvar=json.dumps(myvar)
 	return jvar
