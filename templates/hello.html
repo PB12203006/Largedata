@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			html, body {
+        		margin: 0;
+        		padding: 0;
+        		height: 100%;
+        		width: 100%;
+      		}
+		</style>
+	</head>
+	<body>
+		<h3>Second Masterpiece of Princess Lan and Her Professional Photographer Mina Lisa</h3>
+		<p>tweets</p>
+		<form>
+			<input id="like" type="button" value="Like" onclick="feedback(1);"/>
+			<input id="dislike" type="button" value="Dislike" onclick="feedback(0);"/>
+    	</form>
+		<script>
+			function feedback(indicator){
+				console.log(indicator);
+				$.getJSON($SCRIPT_ROOT+'/feedback',{'indicator':indicator},function(data){
+                	console.log(data);
+                	$("p").text(data.text);
+            	});
+			}
+		</script>
+		<script type=text/javascript>
+    		$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+    	</script>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	</body>
+</html>
