@@ -2,27 +2,138 @@
 <html>
 	<head>
 		<style>
-			html, body {
+			html {
+				margin: 0;
+        		padding: 0;
+        		height: 100%;
+        		width: 100%;
+        		background-image: url('/static/teresahead.png');
+        		background-size: 30%;
+        		background-position: 10% 70%;
+        		background-repeat: no-repeat;
+			}
+			body {
         		margin: 0;
         		padding: 0;
         		height: 100%;
         		width: 100%;
+        		text-align: center;
+        		background-image: url('/static/Teresa.png');
+        		background-size: 45%;
+        		background-position: 110% 70%;
+        		background-repeat: no-repeat;
+      		}
+      		form{
+      			font-size: 150%;
+      		}
+      		h3{
+      			font-size: 220%;
+      		}
+      		label{
+      			font-size: 80%;
       		}
 		</style>
 	</head>
 	<body>
-		<h3>Second Masterpiece of Princess Lan and Her Professional Photographer Mina Lisa</h3>
-		<p>tweets</p>
+		<h3 style="text-align:center;">Second Masterpiece of Princess Lan and Her Faithful Photographer Mina Lisa</h3>
+		<!--<h3 style="text-align:center;">Demo</h3>-->
+		<!--<p style="textalign:center;">tweets</p>
+		
 		<form>
 			<input id="like" type="button" value="Like" onclick="feedback(1);"/>
-			<input id="dislike" type="button" value="Dislike" onclick="feedback(0);"/>
+			<input id="dislike" type="button" value="Submit" onclick="feedback(0);"/>
+    	</form>
+    -->
+    	<form id='form'>
+    		<p0>tweet_0</p0>
+    		<br>
+    		<input type="radio" id="like_0" name="img_0" value="1" />
+    		<label for="like_0">Like</label>
+    		<input type="radio" id="dislike_0" name="img_0" value="0" />
+    		<label for="dislike_0">Dislike</label>
+    		<br>
+    		<p1>tweet_1</p1>
+    		<br>
+    		<input type="radio" id="like_1" name="img_1" value="1" />
+    		<label for="like_1">Like</label>
+    		<input type="radio" id="dislike_1" name="img_1" value="0" />
+    		<label for="dislike_1">Dislike</label>
+    		<br>
+    		<p2>tweet_2</p2>
+    		<br>
+    		<input type="radio" id="like_2" name="img_2" value="1" />
+    		<label for="like_2">Like</label>
+    		<input type="radio" id="dislike_2" name="img_2" value="0" />
+    		<label for="dislike_2">Dislike</label>
+    		<br>
+    		<p3>tweet_3</p3>
+    		<br>
+    		<input type="radio" id="like_3" name="img_3" value="1" />
+    		<label for="like_3">Like</label>
+    		<input type="radio" id="dislike_3" name="img_3" value="0" />
+    		<label for="dislike_3">Dislike</label>
+    		<br>
+    		<p4>tweet_4</p4>
+    		<br>
+    		<input type="radio" id="like_4" name="img_4" value="1" />
+    		<label for="like_4">Like</label>
+    		<input type="radio" id="dislike_4" name="img_4" value="0" />
+    		<label for="dislike_4">Dislike</label>
+    		<br>
+    		<p5>tweet_5</p5>
+    		<br>
+    		<input type="radio" id="like_5" name="img_5" value="1" />
+    		<label for="like_5">Like</label>
+    		<input type="radio" id="dislike_5" name="img_5" value="0" />
+    		<label for="dislike_5">Dislike</label>
+    		<br>
+    		<p6>tweet_6</p6>
+    		<br>
+    		<input type="radio" id="like_6" name="img_6" value="1" />
+    		<label for="like_6">Like</label>
+    		<input type="radio" id="dislike_6" name="img_6" value="0" />
+    		<label for="dislike_6">Dislike</label>
+    		<br>
+    		<p7>tweet_7</p7>
+    		<br>
+    		<input type="radio" id="like_7" name="img_7" value="1" />
+    		<label for="like_7">Like</label>
+    		<input type="radio" id="dislike_7" name="img_7" value="0" />
+    		<label for="dislike_7">Dislike</label>
+    		<br>
+    		<p8>tweet_8</p8>
+    		<br>
+    		<input type="radio" id="like_8" name="img_8" value="1" />
+    		<label for="like_8">Like</label>
+    		<input type="radio" id="dislike_8" name="img_8" value="0" />
+    		<label for="dislike_8">Dislike</label>
+    		<br>
+    		<p9>tweet_9</p9>
+    		<br>
+    		<input type="radio" id="like_9" name="img_9" value="1" />
+    		<label for="like_9">Like</label>
+    		<input type="radio" id="dislike_9" name="img_9" value="0" />
+    		<label for="dislike_9">Dislike</label>
+    		<br>
+    		<input id="like" type="button" value="Submit" onclick="feedback();"/>
     	</form>
 		<script>
-			function feedback(indicator){
-				console.log(indicator);
-				$.getJSON($SCRIPT_ROOT+'/feedback',{'indicator':indicator},function(data){
+			function feedback(){
+				var f=new Array();
+				var i;
+				for(i=0;i<10;i++)
+				{
+					//	var s_i=String(i);
+					var ipt='input[name=img_'+String(i)+']:checked';
+					f.push($(ipt).val());
+				}
+				console.log(f);
+				$.getJSON($SCRIPT_ROOT+'/feedback',{'f':f},function(data){
                 	console.log(data);
-                	$("p").text(data.text);
+                	for(i=0;i<10;i++)
+                	{
+                		$('p'+String(i)).text(data.text[i]);
+                	}
             	});
 			}
 		</script>

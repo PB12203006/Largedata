@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request
 import requests,json
-import random
 
 application = Flask(__name__)
 application.config["DEBUG"] = True
@@ -11,12 +10,14 @@ def hello():
 
 @application.route("/feedback")
 def feedback():
-	indicator = int(request.args.get('indicator',''))
-	print indicator
 
-	t=str(random.randint(0,100))   #t is the tweet we are going to display
-	
-	myvar={"text":t}
+	f=request.args.getlist('f[]')
+	y=[int(i) for i in f]
+	print y
+
+	text=['Second','Masterpiece','of','Princess','Lan','and','Her','Photographer','Mina','Lisa']
+
+	myvar={"text":text}
 	jvar=json.dumps(myvar)
 	return jvar
 
