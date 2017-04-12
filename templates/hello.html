@@ -45,91 +45,93 @@
     	</form>
     -->
     	<form id='form'>
-    		<p0>tweet_0</p0>
+    		<p0>{{init_t[0]}}</p0>
     		<br>
     		<input type="radio" id="like_0" name="img_0" value="1" />
     		<label for="like_0">Like</label>
-    		<input type="radio" id="dislike_0" name="img_0" value="0" />
+    		<input type="radio" id="dislike_0" name="img_0" value="-1" />
     		<label for="dislike_0">Dislike</label>
     		<br>
-    		<p1>tweet_1</p1>
+    		<p1>{{init_t[1]}}</p1>
     		<br>
     		<input type="radio" id="like_1" name="img_1" value="1" />
     		<label for="like_1">Like</label>
-    		<input type="radio" id="dislike_1" name="img_1" value="0" />
+    		<input type="radio" id="dislike_1" name="img_1" value="-1" />
     		<label for="dislike_1">Dislike</label>
     		<br>
-    		<p2>tweet_2</p2>
+    		<p2>{{init_t[2]}}</p2>
     		<br>
     		<input type="radio" id="like_2" name="img_2" value="1" />
     		<label for="like_2">Like</label>
-    		<input type="radio" id="dislike_2" name="img_2" value="0" />
+    		<input type="radio" id="dislike_2" name="img_2" value="-1" />
     		<label for="dislike_2">Dislike</label>
     		<br>
-    		<p3>tweet_3</p3>
+    		<p3>{{init_t[3]}}</p3>
     		<br>
     		<input type="radio" id="like_3" name="img_3" value="1" />
     		<label for="like_3">Like</label>
-    		<input type="radio" id="dislike_3" name="img_3" value="0" />
+    		<input type="radio" id="dislike_3" name="img_3" value="-1" />
     		<label for="dislike_3">Dislike</label>
     		<br>
-    		<p4>tweet_4</p4>
+    		<p4>{{init_t[4]}}</p4>
     		<br>
     		<input type="radio" id="like_4" name="img_4" value="1" />
     		<label for="like_4">Like</label>
-    		<input type="radio" id="dislike_4" name="img_4" value="0" />
+    		<input type="radio" id="dislike_4" name="img_4" value="-1" />
     		<label for="dislike_4">Dislike</label>
     		<br>
-    		<p5>tweet_5</p5>
+    		<p5>{{init_t[5]}}</p5>
     		<br>
     		<input type="radio" id="like_5" name="img_5" value="1" />
     		<label for="like_5">Like</label>
-    		<input type="radio" id="dislike_5" name="img_5" value="0" />
+    		<input type="radio" id="dislike_5" name="img_5" value="-1" />
     		<label for="dislike_5">Dislike</label>
     		<br>
-    		<p6>tweet_6</p6>
+    		<p6>{{init_t[6]}}</p6>
     		<br>
     		<input type="radio" id="like_6" name="img_6" value="1" />
     		<label for="like_6">Like</label>
     		<input type="radio" id="dislike_6" name="img_6" value="0" />
     		<label for="dislike_6">Dislike</label>
     		<br>
-    		<p7>tweet_7</p7>
+    		<p7>{{init_t[7]}}</p7>
     		<br>
     		<input type="radio" id="like_7" name="img_7" value="1" />
     		<label for="like_7">Like</label>
-    		<input type="radio" id="dislike_7" name="img_7" value="0" />
+    		<input type="radio" id="dislike_7" name="img_7" value="-1" />
     		<label for="dislike_7">Dislike</label>
     		<br>
-    		<p8>tweet_8</p8>
+    		<p8>{{init_t[8]}}</p8>
     		<br>
     		<input type="radio" id="like_8" name="img_8" value="1" />
     		<label for="like_8">Like</label>
-    		<input type="radio" id="dislike_8" name="img_8" value="0" />
+    		<input type="radio" id="dislike_8" name="img_8" value="-1" />
     		<label for="dislike_8">Dislike</label>
     		<br>
-    		<p9>tweet_9</p9>
+    		<p9>{{init_t[9]}}</p9>
     		<br>
     		<input type="radio" id="like_9" name="img_9" value="1" />
     		<label for="like_9">Like</label>
-    		<input type="radio" id="dislike_9" name="img_9" value="0" />
+    		<input type="radio" id="dislike_9" name="img_9" value="-1" />
     		<label for="dislike_9">Dislike</label>
     		<br>
     		<input id="like" type="button" value="Submit" onclick="feedback();"/>
     	</form>
 		<script>
+            var replica={"text":[0,1,2,3,4,5,6,7,8,9]};
+            //var replica={};
 			function feedback(){
 				var f=new Array();
 				var i;
 				for(i=0;i<10;i++)
 				{
-					//	var s_i=String(i);
 					var ipt='input[name=img_'+String(i)+']:checked';
 					f.push($(ipt).val());
 				}
 				console.log(f);
-				$.getJSON($SCRIPT_ROOT+'/feedback',{'f':f},function(data){
+				$.getJSON($SCRIPT_ROOT+'/feedback',{'f':f,'text':replica.text},function(data){
                 	console.log(data);
+                    replica=data;
                 	for(i=0;i<10;i++)
                 	{
                 		$('p'+String(i)).text(data.text[i]);
