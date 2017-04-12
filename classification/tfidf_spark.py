@@ -2,6 +2,9 @@ from pyspark import SparkContext
 from pyspark.mllib.feature import HashingTF, IDF
 from pyspark.mllib.regression import LabeledPoint
 from pyspark.mllib.classification import NaiveBayes, SVMWithSGD, SVMModel, LogisticRegressionWithLBFGS, LogisticRegressionModel
+from perceptron import PerceptronforRDD
+
+import numpy as np
 
 sc = SparkContext()
 # Load documents (one per line).
@@ -30,7 +33,7 @@ labels = training_raw.map(
 
 # While applying HashingTF only needs a single pass to the data, applying IDF needs two passes:
 # First to compute the IDF vector and second to scale the term frequencies by IDF.
-tf = HashingTF(numFeatures=100).transform( ## Use much larger number in practice
+tf = HashingTF(numFeatures=200).transform( ## Use much larger number in practice
     training_raw.map(lambda doc: doc["text"].split(),
     preservesPartitioning=True))
 
@@ -54,7 +57,7 @@ testlabels = test_raw.map(
     preservesPartitioning=True # This is obsolete.
 )
 
-testtf = HashingTF(numFeatures=100).transform( ## Use much larger number in practice
+testtf = HashingTF(numFeatures=200).transform( ## Use much larger number in practice
     test_raw.map(lambda doc: doc["text"].split(),
     preservesPartitioning=True))
 
@@ -64,6 +67,10 @@ testtfidf = testidf.transform(testtf)
 
 # Combine using zip
 test = testlabels.zip(testtf).map(lambda x: LabeledPoint(x[0], x[1]))
+
+"""
+Use NaiveBayes model from pyspark.mllib
+"""
 
 # Train and check
 model = NaiveBayes.train(training)
@@ -79,6 +86,9 @@ metrics = MulticlassMetrics(
 
 print(metrics.confusionMatrix().toArray())
 
+"""
+Use SVMWithSGD model from pyspark.mllib
+"""
 
 model = SVMWithSGD.train(training, iterations=100)
 
@@ -91,7 +101,9 @@ metrics = MulticlassMetrics(
 
 print(metrics.confusionMatrix().toArray())
 
-
+"""
+Use LogisticRegressionWithLBFGS model from pyspark.mllib
+"""
 
 model = LogisticRegressionWithLBFGS.train(training)
 labels_and_preds = testlabels.zip(model.predict(testtf)).map(
@@ -123,7 +135,34 @@ print(metrics.confusionMatrix().toArray())
 
 #data = sc.textFile("data/mllib/sample_svm_data.txt")
 #parsedData = data.map(parsePoint)
-import numpy as np
+"""
+Classify a batch of tf/idf using Perceptron based on RDD
+"""
+
+label = labels.map(lambda line: float(line))
+testlabel = testlabels.map(lambda line: float(line))
+testlabel = testlabel.map(lambda x: -1.0*(x==0 or x==-1)+1.0*(x==1))
+print(testlabel.take(5))
+
+model = PerceptronforRDD(200)
+[w,b] = model.PerceptronBatch(tf, label)
+predict = model.Predict(testtf)
+print(predict.take(5))
+errrate = model.PredictErrrate(testtf,testlabel)
+print(errrate)
+
+model = PerceptronforRDD(200)
+[w,b] = model.AveragePerceptron(tf, label)
+predict = model.Predict(testtf)
+print(predict.take(5))
+errrate = model.PredictErrrate(testtf,testlabel)
+print(errrate)
+
+
+"""
+Classify a batch of tf/tfidf after collcet() using Online Perceptron and Avarage Perceptron
+"""
+
 from scipy.sparse import coo_matrix
 
 # m sparse matrix
