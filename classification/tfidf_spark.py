@@ -27,6 +27,9 @@ labels = training_raw.map(
     preservesPartitioning=True # This is obsolete.
 )
 
+
+# While applying HashingTF only needs a single pass to the data, applying IDF needs two passes:
+# First to compute the IDF vector and second to scale the term frequencies by IDF.
 tf = HashingTF(numFeatures=100).transform( ## Use much larger number in practice
     training_raw.map(lambda doc: doc["text"].split(),
     preservesPartitioning=True))
@@ -100,20 +103,12 @@ metrics = MulticlassMetrics(
 
 print(metrics.confusionMatrix().toArray())
 
-# While applying HashingTF only needs a single pass to the data, applying IDF needs two passes:
-# First to compute the IDF vector and second to scale the term frequencies by IDF.
-#tf.cache()
-#tf_test.cache()
-#idf = IDF().fit(tf)
-#idf_test = IDF().fit(tf_test)
-#tfidf = idf.transform(tf)
-#tfidf_test = idf_test.transform(tf_test)
 
 
 #print([[tf[i], label[i]] for i in range(label.count())])
 #traindata = tf.zip(label).map(lambda p: Row(review=p[0], label=p[1]))
 #training = labels.zip(tfidf).map(lambda x: LabeledPoint(x[0], x[1]))
-#print(training)
+
 #testdata = tf_test.zip(testlabel).map(lambda p: Row(review=p[0], label=p[1]))
 # spark.mllib's IDF implementation provides an option for ignoring terms
 # which occur in less than a minimum number of documents.
@@ -122,9 +117,75 @@ print(metrics.confusionMatrix().toArray())
 #idfIgnore = IDF(minDocFreq=2).fit(tf)
 #tfidfIgnore = idfIgnore.transform(tf)
 # Load and parse the data
-def parsePoint(line):
-    values = [float(x) for x in line.split(' ')]
-    return LabeledPoint(values[0], values[1:])
+#def parsePoint(line):
+#    values = [float(x) for x in line.split(' ')]
+#    return LabeledPoint(values[0], values[1:])
 
-data = sc.textFile("data/mllib/sample_svm_data.txt")
-parsedData = data.map(parsePoint)
+#data = sc.textFile("data/mllib/sample_svm_data.txt")
+#parsedData = data.map(parsePoint)
+import numpy as np
+from scipy.sparse import coo_matrix
+
+# m sparse matrix
+# d dimension
+# y label
+# m should be preprocessed into a sparse matrix,so currently this function may not work
+def Perceptron_train(m,y):
+	w=np.zeros(m[1].size)
+	b=0
+	y = [-1*(x==0 or x==-1)+(x==1) for x in y]
+	for i in range (len(m)):
+		a=m[i].dot(w)+b
+		if y[i]*a<=0:
+			w=w+y[i]*m[i].toArray()
+			b=b+y[i]
+	return [w,b]
+
+
+def AveragePerceptron(data, label):
+	w = np.zeros(data[1].size)
+	u = np.zeros(data[1].size)
+	b = 0
+	c = 1
+	beta = 0
+	label = [-1*(x==0 or x==-1)+(x==1) for x in label]
+	for i in range(len(data)):
+		predict = data[i].dot(w) + b
+		if label[i]*predict<0 or label[i]*predict==0:
+			w = w + label[i]*data[i].toArray()
+			b = b + label[i]
+			u = u + c*label[i]*data[i].toArray()
+			beta = beta + c*label[i]
+		c += 1
+	w = w - u/c
+	b = b - beta/c
+	return [w,b]
+
+def PerceptronPredict(testdata,w,b):
+	predict = []
+	for i in range(len(testdata)):
+		p = testdata[i].dot(w) + b
+		p = -1*(p<0)+1*(p>=0)
+		predict.append(p)
+	return predict
+
+tfidf = tfidf.collect()
+testtfidf = testtfidf.collect()
+label = label.collect()
+testlabel = testlabel.collect()
+[w,b] = Perceptron_train(tfidf, label)
+predict = PerceptronPredict(testtfidf, w, b)
+testlabel = [-1*(x==0 or x==-1)+(x==1) for x in testlabel]
+ones = [1*(testlabel[i]!=predict[i]) for i in range(len(testlabel))]
+err = sum(ones)
+print(err)
+errrate = float(err)/float(len(testlabel))
+print(errrate)
+[w,b] = AveragePerceptron(tfidf, label)
+predict = PerceptronPredict(testtfidf, w, b)
+testlabel = [-1*(x==0 or x==-1)+(x==1) for x in testlabel]
+ones = [1*(testlabel[i]!=predict[i]) for i in range(len(testlabel))]
+err = sum(ones)
+print(err)
+errrate = float(err)/float(len(testlabel))
+print(errrate)
