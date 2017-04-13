@@ -58,8 +58,6 @@ def ClassifybyPerceptron(tf,label):
 	[w,b] = model.AveragePerceptron(tf, label)
 	return model
 
-# Combine using zip
-training = labels.zip(tf).map(lambda x: LabeledPoint(x[0], x[1]))
 
 #if rdd nonempty, do something
 def process(rdd):
