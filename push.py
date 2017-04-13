@@ -8,4 +8,3 @@ producer = KafkaProducer(bootstrap_servers=['localhost:9092'])
 def push(tuple):
 	global producer
 	producer.send('test', tuple)
-

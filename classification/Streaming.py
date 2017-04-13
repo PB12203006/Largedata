@@ -1,7 +1,7 @@
 from pyspark.streaming.kafka import KafkaUtils
 import pyspark.streaming
 import pyspark
-
+import json
 from pyspark.mllib.feature import HashingTF, IDF
 from perceptron import PerceptronforRDD
 #initialize
@@ -56,16 +56,24 @@ def Tf(data):
 
 def ClassifybyPerceptron(tf,label):
 	[w,b] = model.AveragePerceptron(tf, label)
-	return model
+	return [model,w,b]
 
 
 #if rdd nonempty, do something
 def process(rdd):
 	if rdd.count()!=0:
 		print '\n\n\n\n\n\n\n'
-		data = rdd.collect()[0][1]
+		data = json.loads(rdd.collect()[0][1])
+		print('Training data:\n',data)
+		print('\n')
 		[tf, labels] = Tf(data)
-		model = ClassifybyPerceptron(tf,labels)
+		print('Training data after TF:\n',[tf.take(10),labels.take(10)])
+		print('\n')
+		[model,w,b] = ClassifybyPerceptron(tf,labels)
+		print('Perceptron weight:\n',[w,b])
+		print('\n')
+		errrate = model.PredictErrrate(tf,labels)
+		print('Training error rate:', errrate)
 		print '\n\n\n\n\n\n'
 		#call any function you like
 
