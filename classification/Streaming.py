@@ -1,11 +1,15 @@
 from pyspark.streaming.kafka import KafkaUtils
 import pyspark.streaming
 import pyspark
+
+from pyspark.mllib.feature import HashingTF, IDF
+from perceptron import PerceptronforRDD
 #initialize
 sc=pyspark.SparkContext(appName="akftest")
 sc.setLogLevel("WARN")
 ssc=pyspark.streaming.StreamingContext(sc,5)#second argument is the period of pulling data
 topic=["test"] #the topic of kafka
+model = PerceptronforRDD(200)
 
 '''
 init_rdd=sc.emptyRDD()
@@ -21,11 +25,49 @@ def process(rdd):
 		init_rdd=sc.emptyRDD()
 		init_rdd.cache()
 '''
+def Tfidf(data):
+	training_raw = sc.parallelize(data)
+	labels = training_raw.map(
+    	lambda doc: doc["label"],  # Standard Python dict access
+    	preservesPartitioning=True # This is obsolete.
+	)
+	# While applying HashingTF only needs a single pass to the data, applying IDF needs two passes:
+	# First to compute the IDF vector and second to scale the term frequencies by IDF.
+	tf = HashingTF(numFeatures=200).transform( ## Use much larger number in practice
+    	training_raw.map(lambda doc: doc["text"].split(),
+    	preservesPartitioning=True))
+	#tf.cache()
+	idf = IDF().fit(tf)
+	tfidf = idf.transform(tf)
+	return tfidf
+
+def Tf(data):
+	training_raw = sc.parallelize(data)
+	labels = training_raw.map(
+    	lambda doc: doc["label"],  # Standard Python dict access
+    	preservesPartitioning=True # This is obsolete.
+	)
+	# While applying HashingTF only needs a single pass to the data, applying IDF needs two passes:
+	# First to compute the IDF vector and second to scale the term frequencies by IDF.
+	tf = HashingTF(numFeatures=200).transform( ## Use much larger number in practice
+    	training_raw.map(lambda doc: doc["text"].split(),
+    	preservesPartitioning=True))
+	return [tf,labels]
+
+def ClassifybyPerceptron(tf,label):
+	[w,b] = model.AveragePerceptron(tf, label)
+	return model
+
+# Combine using zip
+training = labels.zip(tf).map(lambda x: LabeledPoint(x[0], x[1]))
+
 #if rdd nonempty, do something
 def process(rdd):
 	if rdd.count()!=0:
 		print '\n\n\n\n\n\n\n'
-		print rdd.collect()
+		data = rdd.collect()[0][1]
+		[tf, labels] = Tf(data)
+		model = ClassifybyPerceptron(tf,labels)
 		print '\n\n\n\n\n\n'
 		#call any function you like
 
