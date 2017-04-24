@@ -1,19 +1,21 @@
 from pyspark.streaming.kafka import KafkaUtils
 import pyspark.streaming
 import pyspark
-
+from pyspark.sql import SparkSession
 from pyspark.mllib.feature import HashingTF, IDF
 from perceptron import PerceptronforRDD
 import json
 
-import ES
+import Push_to_ES
+import tweets_category_predict_nb
 #initialize
 sc=pyspark.SparkContext(appName="akftest")
 sc.setLogLevel("WARN")
 ssc=pyspark.streaming.StreamingContext(sc,5)#second argument is the period of pulling data
 topic_1=["test"] #the topic of kafka
 topic_2=["twitterstream_raw"]
-model = PerceptronforRDD(200)
+model = PerceptronforRDD(2000)
+spark = SparkSession(sc)
 
 '''
 init_rdd=sc.emptyRDD()
@@ -38,7 +40,7 @@ def Tfidf(data):
 	)
 	# While applying HashingTF only needs a single pass to the data, applying IDF needs two passes:
 	# First to compute the IDF vector and second to scale the term frequencies by IDF.
-	tf = HashingTF(numFeatures=200).transform( ## Use much larger number in practice
+	tf = HashingTF(numFeatures=2000).transform( ## Use much larger number in practice
     	training_raw.map(lambda doc: doc["text"].split(),
     	preservesPartitioning=True))
 	#tf.cache()
@@ -72,7 +74,7 @@ def Tf(data):
 	)
 	# While applying HashingTF only needs a single pass to the data, applying IDF needs two passes:
 	# First to compute the IDF vector and second to scale the term frequencies by IDF.
-	tf = HashingTF(numFeatures=200).transform( ## Use much larger number in practice
+	tf = HashingTF(numFeatures=2000).transform( ## Use much larger number in practice
     	training_raw.map(lambda doc: doc["text"].split(),
     	preservesPartitioning=True))
 	return [tf,labels]
@@ -122,11 +124,16 @@ def process_tweets(rdd):
 			print tf.collect()
 			labels=model.Predict(tf)
 			print labels.collect()[0]
-			if labels.collect()[0]>0:
-				ES.push('tweets_like',json.dumps(data[0]))
-			else:
-				ES.push('tweets_dislike',json.dumps(data[0]))
-
+			categories = tweets_category_predict_nb.predictTweetCategNB(tf.collect(),sc)
+			print categories
+			#category = 'R'
+			for category in categories:
+				if labels.collect()[0]>0:
+					category=category+'_like'
+				else:
+				#Push_to_ES.push('tweets',,json.dumps(data[0]))
+					category=category+'_dislike'
+				Push_to_ES.push('tweets',category,json.dumps(data[0]))
 
 kafkaparams={
 	"zookeeper.connect":"localhost:2181",
