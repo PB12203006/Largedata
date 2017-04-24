@@ -3,7 +3,7 @@ import json
 import sys
 reload(sys)
 sys.setdefaultencoding('UTF8')
-txt_file = "news_sections_abstract0.txt"
+txt_file = "news_sections_abstract2016.txt"
 try:
     outfile = open(txt_file, "w")
 except IOError as e:
