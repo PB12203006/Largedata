@@ -1,8 +1,10 @@
 from pyspark.streaming.kafka import KafkaUtils
 import pyspark.streaming
 import pyspark
-from pyspark.sql import SparkSession
-from pyspark.mllib.feature import HashingTF, IDF
+from pyspark.sql import SparkSession, Row
+import pyspark.mllib.feature.HashingTF as HashingTFmllib
+import pyspark.mllib.feature.IDF as IDFmllib
+from pyspark.ml.feature import HashingTF, IDF, Tokenizer
 from perceptron import PerceptronforRDD
 import json
 
@@ -32,7 +34,7 @@ def process(rdd):
 		init_rdd.cache()
 '''
 
-def Tfidf(data):
+def Tfidfmllib(data):
 	training_raw = sc.parallelize(data)
 	labels = training_raw.map(
     	lambda doc: doc["label"],  # Standard Python dict access
@@ -40,11 +42,11 @@ def Tfidf(data):
 	)
 	# While applying HashingTF only needs a single pass to the data, applying IDF needs two passes:
 	# First to compute the IDF vector and second to scale the term frequencies by IDF.
-	tf = HashingTF(numFeatures=2000).transform( ## Use much larger number in practice
+	tf = HashingTFmllib(numFeatures=2000).transform( ## Use much larger number in practice
     	training_raw.map(lambda doc: doc["text"].split(),
     	preservesPartitioning=True))
 	#tf.cache()
-	idf = IDF().fit(tf)
+	idf = IDFmllib().fit(tf)
 	tfidf = idf.transform(tf)
 	return tfidf
 '''
@@ -66,7 +68,7 @@ def ClassifybyPerceptron(tf,label):
 	return [model,w,b]
 '''
 
-def Tf(data):
+def Tfmllib(data):
 	training_raw = sc.parallelize(data)
 	labels = training_raw.map(
     	lambda doc: doc["label"],  # Standard Python dict access
@@ -74,12 +76,12 @@ def Tf(data):
 	)
 	# While applying HashingTF only needs a single pass to the data, applying IDF needs two passes:
 	# First to compute the IDF vector and second to scale the term frequencies by IDF.
-	tf = HashingTF(numFeatures=2000).transform( ## Use much larger number in practice
+	tf = HashingTFmllib(numFeatures=2000).transform( ## Use much larger number in practice
     	training_raw.map(lambda doc: doc["text"].split(),
     	preservesPartitioning=True))
 	return [tf,labels]
 
-def ClassifybyPerceptron(tf,label):
+def PreferencePerceptron(tf,label):
 	[w,b] = model.AveragePerceptron(tf, label)
 	return [model,w,b]
 
@@ -94,22 +96,26 @@ def process(rdd):
 			print '\n\n\n\n\n\n\n'
 		#	print('Training data:\n',data)
 			print('\n')
-			[tf, labels] = Tf(data)
+			[tfmllib, labels] = Tfmllib(data)
 		#	print('Training data after TF:\n',[tf.take(10),labels.take(10)])
 			print('\n')
-			[model,w,b] = ClassifybyPerceptron(tf,labels)
+			[model,w,b] = PreferencePerceptron(tfmllib,labels)
 			print('Perceptron weight:\n',[w,b])
 			print('\n')
-			errrate = model.PredictErrrate(tf,labels)
+			errrate = model.PredictErrrate(tfmllib,labels)
 			print('Training error rate:', errrate)
 			print '\n\n\n\n\n\n'
 			#call any function you like
 
-def Tf_tweets(data):
-	training_raw = sc.parallelize(data)
-	tf = HashingTF(numFeatures=200).transform( ## Use much larger number in practice
-    	training_raw.map(lambda doc: doc["tweet_text"].split(),
-    	preservesPartitioning=True))
+def Tfml_tweets(data):
+	raw_data = sc.parallelize(data)
+	lines = raw_data.map(lambda line: Row(sentence=line))
+	sentenceData = lines.toDF()
+	tokenizer = Tokenizer(inputCol="sentence", outputCol="words")
+	wordsData = tokenizer.transform(sentenceData)
+	hashingTF = HashingTF(inputCol="words", outputCol="features", numFeatures=2000)
+	featurizedData = hashingTF.transform(wordsData)
+	tf = featurizedData.select('features').rdd.map(lambda x:x.features)
 	return tf
 
 def process_tweets(rdd):
@@ -119,12 +125,12 @@ def process_tweets(rdd):
 		#print rdd.collect()
 		for element in rdd.collect():
 			data = json.loads(element)
-			tf = Tf_tweets(data)
+			tfml = Tfml_tweets(data)
 			print 'After Tf'
-			print tf.collect()
-			labels=model.Predict(tf)
+			print tfml.collect()
+			labels=model.Predict(tfml)
 			print labels.collect()[0]
-			categories = tweets_category_predict_nb.predictTweetCategNB(tf.collect(),sc)
+			categories = tweets_category_predict_nb.predictTweetCategNB(tfml.collect(),sc)
 			print categories
 			#category = 'R'
 			for category in categories:
