@@ -1,4 +1,5 @@
 import numpy as np
+import random
 from scipy.sparse import coo_matrix
 
 
@@ -46,12 +47,15 @@ def PerceptronPredict(testdata,w,b):
 	return predict
 
 class PerceptronforRDD():
-    def __init__(self,numFeatures=200):
-        self.w = np.zeros(numFeatures)
-        self.b = 0
-        self.u_avg = np.zeros(numFeatures)
-        self.beta_avg = 0
-        self.count_avg = 1
+    def __init__(self,numFeatures=2000, w=np.zeros(2000),b=0):
+		if len(w)!= numFeatures:
+			self.w = np.zeros(numFeatures)
+		else:
+			self.w = w
+		self.b = b
+		self.u_avg = np.zeros(numFeatures)
+		self.beta_avg = 0
+		self.count_avg = 1
 
     def PerceptronSingle(self,m,y):
         y = y.map(lambda x: -1.0*(x==0.0 or x==-1.0)+(x==1.0))
@@ -62,30 +66,57 @@ class PerceptronforRDD():
         return [self.w, self.b]
 
     def PerceptronBatch(self,m,y):
-        y = y.map(lambda x: -1.0*(x==0.0 or x==-1.0)+(x==1.0)).collect()
-        m = m.collect()
-        for i in range(len(m)):
-            pred = m[i].dot(self.w)+self.b
-            if y[i]*pred<=0:
-                self.w = self.w+y[i]*m[i].toArray()
-                self.b = self.b+y[i]
-        return [self.w, self.b]
+		y = y.map(lambda x: -1.0*(x==0.0 or x==-1.0)+(x==1.0)).collect()
+		m = m.collect()
+		ind = range(len(m))
+		random.shuffle(ind)
+		for i in ind:
+			pred = m[i].dot(self.w)+self.b
+			if y[i]*pred<=0:
+				self.w = self.w+y[i]*m[i].toArray()
+				self.b = self.b+y[i]
+		return [self.w, self.b]
 
     def AveragePerceptron(self, data, label):
-        label = label.map(lambda x: -1.0*(x==0.0 or x==-1.0)+(x==1.0))
-        label = label.collect()
-        data = data.collect()
-    	for i in range(len(data)):
-    		pred = data[i].dot(self.w) + self.b
-    		if label[i]*pred<0 or label[i]*pred==0:
-    			self.w = self.w + label[i]*data[i].toArray()
-    			self.b = self.b + label[i]
-    			self.u_avg = self.u_avg + self.count_avg*label[i]*data[i].toArray()
-    			self.beta_avg = self.beta_avg + self.count_avg*label[i]
-    		self.count_avg += 1
-    	self.w = self.w - self.u_avg/self.count_avg
-    	self.beta_avg = self.b - self.beta_avg/self.count_avg
-    	return [self.w,self.b]
+		label = label.map(lambda x: -1.0*(x==0.0 or x==-1.0)+(x==1.0))
+		label = label.collect()
+		data = data.collect()
+		ind = range(len(data))
+		random.shuffle(ind)
+		for i in ind:
+			pred = data[i].dot(self.w) + self.b
+			if label[i]*pred<0 or label[i]*pred==0:
+				self.w = self.w + label[i]*data[i].toArray()
+				self.b = self.b + label[i]
+				self.u_avg = self.u_avg + self.count_avg*label[i]*data[i].toArray()
+				self.beta_avg = self.beta_avg + self.count_avg*label[i]
+			self.count_avg += 1
+		self.w = self.w - self.u_avg/self.count_avg
+		self.beta_avg = self.b - self.beta_avg/self.count_avg
+		return [self.w,self.b]
+
+    def AveragePerceptronFB(self, data, label):
+		label = label.map(lambda x: -1.0*(x==0.0 or x==-1.0)+(x==1.0))
+		label = label.collect()
+		data = data.collect()
+		ind = range(len(data))
+		random.shuffle(ind)
+		for i in ind:
+			pred = data[i].dot(self.w) + self.b
+			while label[i]*pred<=0:
+				self.w = self.w + label[i]*data[i].toArray()
+				self.b = self.b + label[i]
+				self.u_avg = self.u_avg + self.count_avg*label[i]*data[i].toArray()
+				self.beta_avg = self.beta_avg + self.count_avg*label[i]
+				self.count_avg += 1
+			self.count_avg += 50
+			self.u_avg = self.u_avg + self.count_avg*label[i]*data[i].toArray()
+			self.beta_avg = self.beta_avg + self.count_avg*label[i]
+		self.w = self.w - self.u_avg/self.count_avg
+		self.beta_avg = self.b - self.beta_avg/self.count_avg
+		return [self.w,self.b]
+
+
 
     def Predict(self,data):
         w = self.w
@@ -99,11 +130,69 @@ class PerceptronforRDD():
 		b = self.b
 		predict = data.map(lambda x: x.dot(w)+b)
 		predict = predict.map(lambda p: -1.0*(p<=0)+1.0*(p>0))
-		print([predict,predict.count(),predict.first()])
-		label = label.map(lambda x: -1.0*(x==0 or x==-1)+1.0*(x==1))
-		print([label,label.count(),label.first()])
+		print(["predict",predict.count(),predict.first()])
+		#label = label.map(lambda x: -1.0*(x==0 or x==-1)+1.0*(x==1))
+		print(["label",label.count(),label.first()])
 		ones = predict.zip(label)
 		err = ones.map(lambda (x,y): 0*(x==y)+1*(x!=y)).sum()
 		#print(err)
 		errrate = float(err)/float(label.count())
 		return errrate
+
+class PerceptronOVRforDF():
+    def __init__(self,numFeatures=20000, numClasses=2,w=[np.zeros(20000)]*2,b=[0]*2):
+        if len(w)!=numClasses or len(w[0])!= numFeatures:
+            self.w = sc.parallelize([np.zeros(numFeatures)]*numClasses)
+            self.b = sc.parallelize([0]*numClasses)
+        else:
+            self.w = sc.parallelize(w)
+            self.b = sc.parallelize(b)
+        self.numClasses = numClasses
+        self.numFeatures = numFeatures
+        self.u_avg = sc.parallelize([np.zeros(numFeatures)]*numClasses)
+        self.beta_avg = sc.parallelize([0]*numClasses)
+        self.count_avg = 1
+
+    def PerceptronRDDOVR(self,dataset):
+        numclasses = self.numClasses
+        y = dataset.select('label').rdd.map(lambda row: row.label) \
+            .map(lambda x: [-1]*int(x)+[1]+[-1]*(numclasses-1-int(x))).collect()
+        m = dataset.select('features').rdd.map(lambda row: row.features).collect()
+        w = self.w.collect()
+        b = self.b.collect()
+        for i in range(len(m)):
+            preds = [m[i].dot(w[j])+b[j] for j in range(numclasses)]
+            err = [preds[j]*y[i][j]<=0 for j in range(numclasses)]
+            w = [(w[j]+y[i][j]*m[i].toArray())*err[j]+w[j]*(not(err[j])) for j in range(numclasses)]
+            b = [(b[j]+y[i][j])*err[j]+b[j]*(not(err[j])) for j in range(numclasses)]
+        self.w = sc.parallelize(w)
+        self.b = sc.parallelize(b)
+        return [self.w, self.b]
+
+    def PerceptronBatchOVR(self,dataset):
+        numclasses = self.numClasses
+        y = dataset.select('label').rdd.map(lambda row: row.label) \
+            .map(lambda x: [-1]*int(x)+[1]+[-1]*(numclasses-1-int(x))).collect()
+        #y = sc.broadcast(y)
+        m = dataset.select('features').rdd.map(lambda row: row.features).collect()
+        w = self.w
+        b = self.b
+        for i in range(len(m)):
+            preds = b.zip(w).map(lambda x: m[i].dot(x[1])+x[0])
+            err = preds.zip(sc.parallelize(y[i])).map(lambda x: [x[0]*x[1]<=0,x[1]])
+            #w = err.zip(w).map(lambda p: (p[1]+p[0][1]*m.value[i].toArray())*p[0][0]+p[1]*(not(p[0][0])))
+            w = err.zip(w).map(lambda p: (p[1]+p[0][1]*m[i].toArray())*p[0][0]+p[1]*(not(p[0][0])))
+            b = err.zip(b).map(lambda p: (p[1]+p[0][1])*p[0][0]+p[1]*(not(p[0][0])))
+            #b = err.zip(b).map(lambda p: (p[1]+p[0][1])*p[0][0]+p[1]*(not(p[0][0])))
+        self.w = w
+        self.b = b
+        return [self.w, self.b]
+
+    def Predict(self,data):
+        w = self.w.collect()
+        b = self.b.collect()
+        num = self.numClasses
+        pred = data.map(lambda x: [x.dot(w[i])+b[i] for i in range(num)])
+        predict = pred.map(lambda p: [i for i in range(num) if p[i]>0])
+        #predict = predict.map(lambda p: -1.0*(p<0)+1.0*(p>=0))
+        return predict
