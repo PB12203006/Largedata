@@ -11,6 +11,7 @@
         		background-size: 30%;
         		background-position: 10% 70%;
         		background-repeat: no-repeat;
+                
 			}
 			body {
         		margin: 0;
@@ -18,25 +19,27 @@
         		height: 100%;
         		width: 100%;
         		text-align: center;
-        		background-image: url('/static/Teresa.png');
+                background-image: url('/static/Teresa.png');
         		background-size: 45%;
         		background-position: 110% 70%;
         		background-repeat: no-repeat;
       		}
       		form{
-      			font-size: 150%;
+      			font-size: 30%;
       		}
       		h3{
       			font-size: 220%;
       		}
       		label{
-      			font-size: 80%;
+      			font-size: 500%;
       		}
 		</style>
 	</head>
 	<body>
+        <!--
 		<h3 style="text-align:center;">Second Masterpiece of Princess Lan and Her Faithful Photographer Mina Lisa</h3>
-		<!--<h3 style="text-align:center;">Demo</h3>-->
+        -->
+		<h3 style="text-align:center;">Demo</h3>
 		<!--<p style="textalign:center;">tweets</p>
 		
 		<form>
@@ -91,7 +94,7 @@
     		<br>
     		<input type="radio" id="like_6" name="img_6" value="1" />
     		<label for="like_6">Like</label>
-    		<input type="radio" id="dislike_6" name="img_6" value="0" />
+    		<input type="radio" id="dislike_6" name="img_6" value="-1" />
     		<label for="dislike_6">Dislike</label>
     		<br>
     		<p7>{{init_t[7]}}</p7>
@@ -117,25 +120,35 @@
     		<br>
     		<input id="like" type="button" value="Submit" onclick="feedback();"/>
     	</form>
+        <h4></h4>
 		<script>
-            var replica={"text":[0,1,2,3,4,5,6,7,8,9]};
-            //var replica={};
 			function feedback(){
 				var f=new Array();
+                var text=[];
 				var i;
 				for(i=0;i<10;i++)
 				{
 					var ipt='input[name=img_'+String(i)+']:checked';
 					f.push($(ipt).val());
+                    text.push($('p'+String(i)).text());
 				}
 				console.log(f);
-				$.getJSON($SCRIPT_ROOT+'/feedback',{'f':f,'text':replica.text},function(data){
+                console.log(text);
+				$.getJSON($SCRIPT_ROOT+'/feedback',{'f':f,'text':text},function(data){
                 	console.log(data);
-                    replica=data;
-                	for(i=0;i<10;i++)
+                    console.log(data.text.length)
+                	for(i=0;i<data.text.length;i++)
                 	{
                 		$('p'+String(i)).text(data.text[i]);
                 	}
+                    if(data.text.length<10)
+                    {
+                        for(i=data.text.length;i<10;i++)
+                        {
+                            $('p'+String(i)).text('Tooooo fast!!');
+                        }
+                    }
+                  //  $('h4').text(data.label);
             	});
 			}
 		</script>
