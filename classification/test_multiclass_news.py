@@ -5,7 +5,7 @@ import json
 import sys
 reload(sys)
 sys.setdefaultencoding('UTF8')
-from pyspark.ml.classification import NaiveBayes
+from pyspark.ml.classification import NaiveBayes,NaiveBayesModel
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 from perceptron import PerceptronforRDD, PerceptronOVRforDF
 
@@ -48,7 +48,7 @@ Multiclass Perceptron
 """
 
 dataset = train#.randomSplit([0.8, 0.2])
-dataset.cache()
+
 '''
 labels = test.select('label').rdd.map(lambda row: row.label).collect()
 modelmulti = PerceptronOVRforDF(numFeatures=2000, numClasses=19)
@@ -61,42 +61,44 @@ errrate = float(sum(err))/float(len(labels))
 print "Perceptron error rate:", errrate
 '''
 
-"""
+
 traindata = dataset.select('features').rdd.map(lambda row: row.features)
 trainlabels = dataset.select('label').rdd.map(lambda row: row.label).collect()
 models = []
-e = 0
+
 numclasses = 19
-models = [PerceptronforRDD(numFeatures=2000)]*19
+models = []
 for i in range(numclasses):
-    model = models[i]
+    models.append(PerceptronforRDD(numFeatures=2000))
     labelforone = sc.parallelize([1.0*(trainlabels[j]==i)+(-1.0)*(trainlabels[j]!=i) for j in range(len(trainlabels))])
-    model.PerceptronBatch(traindata,labelforone)
-    preds = model.Predict(traindata)
+    models[i].PerceptronBatch(traindata,labelforone)
+    for times in range(3):
+        models[i].AveragePerceptron(traindata,labelforone)
+    preds = models[i].Predict(traindata)
     pred = preds.collect()
     label = labelforone.collect()
     errrate = sum([1.0*(pred[j]!=label[j])+0*(pred[j]==label[j]) for j in range(len(label))])/float(len(pred))
     print "error rate:",i, errrate
-    e = e + errrate
-print "Overall error rate for perceptron:", e
-"""
+
+#print "Overall error rate for perceptron:", e
+
 
 """
 NaiveBayes
+"""
 """
 
 # create the trainer and set its parameters
 nb = NaiveBayes(smoothing=1.0, modelType="multinomial")
 
 model = nb.fit(train)
+#path = tempfile.mkdtemp()
 model.save("/Users/Jillian/Documents/Python/large_data_pj/NaiveBayes_model/")
 sameModel = NaiveBayesModel.load("/Users/Jillian/Documents/Python/large_data_pj/NaiveBayes_model/")
-
 
 # select example rows to display.
 predictions = model.transform(test)
 #predictions.show()
-
 
 # compute accuracy on the test set
 evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction",
@@ -104,7 +106,7 @@ evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="p
 accuracy = evaluator.evaluate(predictions)
 print("Test set accuracy = " + str(accuracy))
 
-
+"""
 """
 Decision Tree
 """
