@@ -91,14 +91,14 @@ class PerceptronforRDD():
         w = self.w
         b = self.b
         predict = data.map(lambda x: x.dot(w)+b)
-        predict = predict.map(lambda p: -1.0*(p<0)+1.0*(p>=0))
+        predict = predict.map(lambda p: -1.0*(p<=0)+1.0*(p>0))
         return predict
 
     def PredictErrrate(self,data,label):
 		w = self.w
 		b = self.b
 		predict = data.map(lambda x: x.dot(w)+b)
-		predict = predict.map(lambda p: -1.0*(p<0)+1.0*(p>=0))
+		predict = predict.map(lambda p: -1.0*(p<=0)+1.0*(p>0))
 		print([predict,predict.count(),predict.first()])
 		label = label.map(lambda x: -1.0*(x==0 or x==-1)+1.0*(x==1))
 		print([label,label.count(),label.first()])

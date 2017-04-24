@@ -89,10 +89,14 @@ NaiveBayes
 nb = NaiveBayes(smoothing=1.0, modelType="multinomial")
 
 model = nb.fit(train)
+model.save("/Users/Jillian/Documents/Python/large_data_pj/NaiveBayes_model/")
+sameModel = NaiveBayesModel.load("/Users/Jillian/Documents/Python/large_data_pj/NaiveBayes_model/")
+
 
 # select example rows to display.
 predictions = model.transform(test)
 #predictions.show()
+
 
 # compute accuracy on the test set
 evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction",
