@@ -1,6 +1,6 @@
 from pyspark import SparkContext
 import numpy as np
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession, Row
 import json
 import sys
 reload(sys)
@@ -61,52 +61,77 @@ errrate = float(sum(err))/float(len(labels))
 print "Perceptron error rate:", errrate
 '''
 
-
+"""
 traindata = dataset.select('features').rdd.map(lambda row: row.features)
-trainlabels = dataset.select('label').rdd.map(lambda row: row.label).collect()
+trainlabels = dataset.select('label').rdd.map(lambda row: row.label)#.collect()
 models = []
+
 
 numclasses = 19
 models = []
+
+num = trainlabels.count()
+pred_categ = {}
 for i in range(numclasses):
     models.append(PerceptronforRDD(numFeatures=2000))
-    labelforone = sc.parallelize([1.0*(trainlabels[j]==i)+(-1.0)*(trainlabels[j]!=i) for j in range(len(trainlabels))])
-    models[i].PerceptronBatch(traindata,labelforone)
-    for times in range(3):
-        models[i].AveragePerceptron(traindata,labelforone)
+    labelforone = trainlabels.map(lambda x: 1.0*(x==i)+(-1.0)*(x!=i))
+    dataYES = labelforone.zip(traindata).filter(lambda x:x[0]==1)
+    #print dataYES.take(10)
+    count = dataYES.count()
+    frac = float(count)/float(num-count)
+    for j in range(3):
+        dataNO = labelforone.zip(traindata).filter(lambda x: x[0]==-1).sample(False,frac,1)
+        dataCOM = dataYES.union(dataNO)
+        data = dataCOM.map(lambda x: x[1])
+        label = dataCOM.map(lambda x: x[0])
+        models[i].AveragePerceptron(data,label)
     preds = models[i].Predict(traindata)
-    pred = preds.collect()
-    label = labelforone.collect()
-    errrate = sum([1.0*(pred[j]!=label[j])+0*(pred[j]==label[j]) for j in range(len(label))])/float(len(pred))
-    print "error rate:",i, errrate
+    err = labelforone.zip(preds).map(lambda (x,y):1.0*(x!=y)+0.0).collect()
+    errYES = labelforone.zip(preds).map(lambda (x,y):1.0*(x!=y and x==1)+0.0).collect()
+    print "number of fraut predict 1s for",category[i],":", sum(errYES)
+    print "number of actual 1s is:", labelforone.map(lambda x: 1.0*(x==1)+(0.0)*(x==-1)).sum()
+    errrate = float(sum(err))/float(len(err))
+    print "error rate of",category[i],"category is:", errrate
+    #p = preds.zip(traindata).reduceByKey(lambda p,q: [p]+[q])
+    #pred_categ[category[i]]=p.top(1)
+#print pred_categ[category[i]]
 
-#print "Overall error rate for perceptron:", e
+"""
+
 
 
 """
 NaiveBayes
 """
-"""
+
 
 # create the trainer and set its parameters
 nb = NaiveBayes(smoothing=1.0, modelType="multinomial")
 
 model = nb.fit(train)
 #path = tempfile.mkdtemp()
-model.save("/Users/Jillian/Documents/Python/large_data_pj/NaiveBayes_model/")
-sameModel = NaiveBayesModel.load("/Users/Jillian/Documents/Python/large_data_pj/NaiveBayes_model/")
+#model.save("/Users/Jillian/Documents/Python/large_data_pj/NaiveBayes_model/")
+#sameModel = NaiveBayesModel.load("/Users/Jillian/Documents/Python/large_data_pj/NaiveBayes_model/")
 
 # select example rows to display.
-predictions = model.transform(test)
+tt = test.select("features").rdd.map(lambda x: x.features)
+"""
+Here, replace tt in tt.map() as testtf
+"""
+tt = tt.map(lambda x: Row(features=x)).toDF()
+tt.show()
+predictions = model.transform(tt)
 #predictions.show()
-
+labels = predictions.select("prediction").rdd.map(lambda x: category[int(x.prediction)]).collect()
+print labels[:10]
+"""
 # compute accuracy on the test set
 evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction",
                                               metricName="accuracy")
 accuracy = evaluator.evaluate(predictions)
 print("Test set accuracy = " + str(accuracy))
-
 """
+
 """
 Decision Tree
 """
