@@ -2,8 +2,8 @@ from pyspark.streaming.kafka import KafkaUtils
 import pyspark.streaming
 import pyspark
 from pyspark.sql import SparkSession, Row
-import pyspark.mllib.feature.HashingTF as HashingTFmllib
-import pyspark.mllib.feature.IDF as IDFmllib
+from pyspark.mllib.feature import HashingTF as HashingTFmllib
+from pyspark.mllib.feature import IDF as IDFmllib
 from pyspark.ml.feature import HashingTF, IDF, Tokenizer
 from perceptron import PerceptronforRDD
 import json
@@ -62,7 +62,6 @@ def Tf(data):
     	training_raw.map(lambda doc: doc["text"].split(),
     	preservesPartitioning=True))
 	return [tf,labels]
-
 def ClassifybyPerceptron(tf,label):
 	[w,b] = model.AveragePerceptron(tf, label)
 	return [model,w,b]
@@ -109,8 +108,9 @@ def process(rdd):
 
 def Tfml_tweets(data):
 	raw_data = sc.parallelize(data)
-	lines = raw_data.map(lambda line: Row(sentence=line))
+	lines = raw_data.map(lambda doc: doc["tweet_text"]).map(lambda line: Row(sentence=line))
 	sentenceData = lines.toDF()
+	sentenceData.show()
 	tokenizer = Tokenizer(inputCol="sentence", outputCol="words")
 	wordsData = tokenizer.transform(sentenceData)
 	hashingTF = HashingTF(inputCol="words", outputCol="features", numFeatures=2000)
