@@ -47,15 +47,16 @@ def PerceptronPredict(testdata,w,b):
 	return predict
 
 class PerceptronforRDD():
-    def __init__(self,numFeatures=2000, w=np.zeros(2000),b=0):
+    def __init__(self,numFeatures=2000, w=np.zeros(2000),b=0,u_avg=np.zeros(2000),beta_avg = 0,count_avg = 1):
 		if len(w)!= numFeatures:
 			self.w = np.zeros(numFeatures)
+			self.u_avg = np.zeros(numFeatures)
 		else:
 			self.w = w
+			self.u_avg =u_avg
 		self.b = b
-		self.u_avg = np.zeros(numFeatures)
-		self.beta_avg = 0
-		self.count_avg = 1
+		self.beta_avg = beta_avg
+		self.count_avg = count_avg
 
     def PerceptronSingle(self,m,y):
         y = y.map(lambda x: -1.0*(x==0.0 or x==-1.0)+(x==1.0))
@@ -103,26 +104,27 @@ class PerceptronforRDD():
 		random.shuffle(ind)
 		for i in ind:
 			pred = data[i].dot(self.w) + self.b
-			while label[i]*pred<=0:
-				self.w = self.w + label[i]*data[i].toArray()
-				self.b = self.b + label[i]
-				self.u_avg = self.u_avg + self.count_avg*label[i]*data[i].toArray()
-				self.beta_avg = self.beta_avg + self.count_avg*label[i]
-				self.count_avg += 1
-			self.count_avg += 50
-			self.u_avg = self.u_avg + self.count_avg*label[i]*data[i].toArray()
-			self.beta_avg = self.beta_avg + self.count_avg*label[i]
+			for time in range(100):
+				if label[i]*pred<=0:
+					self.w = self.w + label[i]*data[i].toArray()
+					self.b = self.b + label[i]
+					self.u_avg = self.u_avg + self.count_avg*label[i]*data[i].toArray()
+					self.beta_avg = self.beta_avg + self.count_avg*label[i]
+					self.count_avg += 1
+				else:
+					self.u_avg = self.u_avg + self.count_avg*label[i]*data[i].toArray()
+					self.beta_avg = self.beta_avg + self.count_avg*label[i]
+					self.count_avg += 1
 		self.w = self.w - self.u_avg/self.count_avg
 		self.beta_avg = self.b - self.beta_avg/self.count_avg
 		return [self.w,self.b]
-
-
 
     def Predict(self,data):
         w = self.w
         b = self.b
         predict = data.map(lambda x: x.dot(w)+b)
         predict = predict.map(lambda p: -1.0*(p<=0)+1.0*(p>0))
+		#print predict.take(10)
         return predict
 
     def PredictErrrate(self,data,label):
@@ -139,6 +141,8 @@ class PerceptronforRDD():
 		errrate = float(err)/float(label.count())
 		return errrate
 
+
+"""
 class PerceptronOVRforDF():
     def __init__(self,numFeatures=20000, numClasses=2,w=[np.zeros(20000)]*2,b=[0]*2):
         if len(w)!=numClasses or len(w[0])!= numFeatures:
@@ -196,3 +200,4 @@ class PerceptronOVRforDF():
         predict = pred.map(lambda p: [i for i in range(num) if p[i]>0])
         #predict = predict.map(lambda p: -1.0*(p<0)+1.0*(p>=0))
         return predict
+"""

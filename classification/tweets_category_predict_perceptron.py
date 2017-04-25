@@ -4,6 +4,7 @@ import sys
 reload(sys)
 sys.setdefaultencoding('UTF8')
 from perceptron import PerceptronforRDD
+from perceptronMulticlass import MulticlassPerceptron
 
 category = ['Art & Design','World','Sports','Fashion & Style','Books','Music', \
             'Television','Movies','Technology','Science','Food','Real Estate','Theater', \
@@ -13,14 +14,7 @@ dictionary = {'Art & Design':0,'World':1,'Sports':2,'Fashion & Style':3,'Books':
             'Health':13,'Travel':14,'Education':15,'Your Money':16,'Politics':17,'Economy':18}
 
 def predictTweetCategPerceptron(testtf):
-    with open("perceptronModels.json") as data_file:
-        models_para = json.load(data_file)
-    perceptronModels = {}
-    categoryPredict = []
-    for categ in dictionary.keys():
-        param = models_para[categ]
-        perceptronModels[categ]=PerceptronforRDD(w=np.array(param['w']),b=param['b'],u_avg=np.array(param['u_avg']),beta_avg=param['beta_avg'],count_avg=param['count_avg'])
-        preds = perceptronModels[categ].Predict(testtf)
-        if preds.first()==1:
-            categoryPredict.append(categ)
-    return categoryPredict
+    models = MulticlassPerceptron(numClasses=19,numFeatures=2000,dictionary=dictionary,category=category)
+    m = models.load("/Users/Jillian/Documents/Python/large_data_pj/perceptronModels.json")
+    pred_categ = models.predict(testtf)
+    return pred_categ
