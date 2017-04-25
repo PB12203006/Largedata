@@ -1,7 +1,5 @@
 from perceptron import PerceptronforRDD
-from pyspark import SparkContext
 import numpy as np
-from pyspark.sql import SparkSession
 import json
 import sys
 reload(sys)
@@ -24,9 +22,12 @@ class MulticlassPerceptron():
             #print "w:",models[i].w
             #print "b:",models[i].b
             #print "count_avg:",models[i].count_avg
-            preds = models[i].Predict(testtf)
-            if preds.first()==1:
-                categoryPredict.append(categ)
+            if i!=-1:
+                preds = models[i].Predict(testtf)
+                if preds.first()==1:
+                    categoryPredict.append(categ)
+        if categoryPredict==[]:
+            categoryPredict.append("Others")
         return categoryPredict
 
     def load(self,path_json,average=True):
@@ -61,9 +62,9 @@ class MulticlassPerceptron():
 
     def train(self,traindata,trainlabels,source="News"):
         dictionary = self.dictionary
-        dictionary["Others"]=-1.0
+        dictionary["Others"] = -1
         models = self.models
-        trainlabels=trainlabels.map(lambda categ:dictionary[categ])
+        trainlabels=trainlabels.map(lambda categ: dictionary[categ] )
         for i in range(self.numClasses):
             labelforone = trainlabels.map(lambda x: 1.0*(x==i)+(-1.0)*(x!=i))
             if source =="News":
