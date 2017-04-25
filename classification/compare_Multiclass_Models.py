@@ -96,10 +96,10 @@ from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 dt = DecisionTreeClassifier(labelCol="label", featuresCol="features")
 
 # Train model.  This also runs the indexers.
-model = dt.fit(trainingData)
+model = dt.fit(train)
 
 # Make predictions.
-predictions = model.transform(testData)
+predictions = model.transform(test)
 
 # Select example rows to display.
 #predictions.select("prediction", "label", "features").show(5)
@@ -214,8 +214,8 @@ for i in range(numclasses):
     errYES = testlabelforone.zip(preds).map(lambda (x,y):1.0*(x!=y and x==1)+0.0).sum()
     trueYES = testlabelforone.map(lambda x: 1.0*(x==1)+(0.0)*(x==-1)).sum()
     errorRate=float(err)/float(testnum)
-    errors.append(Row(category=category[i],trueTrue=int(trueYES-errYES),faultFault=int(errYES), \
-                    faultTrue=int(err-errYES),trueFault=int(testnum-err-trueYES+errYES),errorRate=errorRate))
+    errors.append(Row(category=category[i],truePositive=int(trueYES-errYES),falseNegative=int(errYES), \
+                    falsePositive=int(err-errYES),trueNegative=int(testnum-err-trueYES+errYES),errorRate=errorRate))
     #print "error rate of",category[i],"category is:", errorRate
 print "MulticlassPerceptron accuracy:"
 errDF = sc.parallelize(errors).toDF()
