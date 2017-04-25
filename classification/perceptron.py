@@ -104,7 +104,7 @@ class PerceptronforRDD():
 		random.shuffle(ind)
 		for i in ind:
 			pred = data[i].dot(self.w) + self.b
-			for time in range(100):
+			for time in range(3):
 				if label[i]*pred<=0:
 					self.w = self.w + label[i]*data[i].toArray()
 					self.b = self.b + label[i]

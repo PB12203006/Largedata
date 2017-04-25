@@ -7,6 +7,7 @@ reload(sys)
 sys.setdefaultencoding('UTF8')
 from perceptron import PerceptronforRDD
 from tweets_category_predict_perceptron import predictTweetCategPerceptron
+from perceptronMulticlass import MulticlassPerceptron
 
 sc = SparkContext()
 spark = SparkSession.builder \
@@ -40,43 +41,80 @@ dictionary = {'Art & Design':0,'World':1,'Sports':2,'Fashion & Style':3,'Books':
 labeleddata = data0.select(data0.label.cast("double").alias('label'),'features').na.drop()
 labeleddata.cache()
 (train, test) = labeleddata.randomSplit([0.8, 0.2])
+
 """
-Multiclasses Perceptron
+Multiclass Perceptron
 """
 
 dataset = labeleddata
 
 traindata = dataset.select('features').rdd.map(lambda row: row.features)
-trainlabels = dataset.select('label').rdd.map(lambda row: row.label)#.collect()
+trainlabels = dataset.select('label').rdd.map(lambda row: row.label)
 
 numclasses = 19
 models = []
+model_param = {}
 num = trainlabels.count()
-model_para = {}
-
+errors = []
 for i in range(numclasses):
-    models.append(PerceptronforRDD(numFeatures=2000))
     labelforone = trainlabels.map(lambda x: 1.0*(x==i)+(-1.0)*(x!=i))
+    models.append(PerceptronforRDD(numFeatures=2000))
+
+    # Combine positive data with negative data on balance proportion
     dataYES = labelforone.zip(traindata).filter(lambda x:x[0]==1)
-    #print dataYES.take(10)
     count = dataYES.count()
     frac = float(count)/float(num-count)
-    for j in range(3):
-        dataNO = labelforone.zip(traindata).filter(lambda x: x[0]==-1).sample(False,frac,1)
-        dataCOM = dataYES.union(dataNO)
-        data = dataCOM.map(lambda x: x[1])
-        label = dataCOM.map(lambda x: x[0])
-        models[i].AveragePerceptron(data,label)
+    dataNO = labelforone.zip(traindata).filter(lambda x: x[0]==-1).sample(False,frac,1)
+    dataCOM = dataYES.union(dataNO)
+    data = dataCOM.map(lambda x: x[1])
+    label = dataCOM.map(lambda x: x[0])
+
+    # Train perceptron models for each class
+    models[i].AveragePerceptron(data,label)
+
+    # save the parameters of perceptron model for each class
     parameters = {"w":models[i].w.tolist(),"b":models[i].b,"u_avg":models[i].u_avg.tolist(),"beta_avg":models[i].beta_avg,"count_avg":models[i].count_avg}
-    model_para[category[i]]=parameters
-    #preds = models[i].Predict(traindata)
-#print json.dumps(model_para, indent=4)
-txt_file = "perceptronModels.json"
-with open(txt_file, 'w') as outfile:
-    json.dump(model_para, outfile)
+    model_param[category[i]]=parameters
+
+    # training error rate and confution matrix
+    preds = models[i].Predict(traindata)
+    err = labelforone.zip(preds).map(lambda (x,y):1.0*(x!=y)+0.0).sum()
+    errYES = labelforone.zip(preds).map(lambda (x,y):1.0*(x!=y and x==1)+0.0).sum()
+    trueYES = labelforone.map(lambda x: 1.0*(x==1)+(0.0)*(x==-1)).sum()
+    errorRate=float(err)/float(num)
+    errors.append(Row(category=category[i],trueTrue=int(trueYES-errYES),faultFault=int(errYES), \
+                    faultTrue=int(err-errYES),trueFault=int(num-err-trueYES+errYES),errorRate=float(err)/float(num)))
+    print "error rate of",category[i],"category is:", errorRate
+
+errDF = sc.parallelize(errors).toDF()
+errDF.show()
+
+"""
+Write the model to the perceptronModels.json file to save the trained model
+"""
+json_file = "perceptronModels.json"
+with open(json_file, 'w') as outfile:
+    json.dump(model_param, outfile)
 print "write models parameters to file complete"
 
 """
-categoryPredict=predictTweetCategPerceptron(traindata)
-print categoryPredict
+Test the MulticlassPerceptron Class: train/ save/ load/ predict
 """
+multiclassperceptron = MulticlassPerceptron(dictionary=dictionary,category=category)
+models = multiclassperceptron.train(traindata,trainlabels)
+print multiclassperceptron.predict(traindata)
+multiclassperceptron.save("test0.json")
+
+loadperceptron0 = MulticlassPerceptron(dictionary=dictionary,category=category)
+loadmodels = loadperceptron0.load("test0.json",average=True)
+print loadperceptron0.predict(traindata)
+
+trainlabels = dataset.select('label').rdd.map(lambda row: category[int(row.label)])#.collect()
+fbtest = MulticlassPerceptron(dictionary=dictionary,category=category)
+models = fbtest.train(traindata,trainlabels,source="Feedback")
+print fbtest.predict(traindata)
+fbtest.save("test1.json")
+
+loadperceptron1 = MulticlassPerceptron(dictionary=dictionary,category=category)
+loadmodels = loadperceptron1.load("test1.json",average=True)
+print loadperceptron1.predict(traindata)
