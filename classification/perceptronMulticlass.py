@@ -61,8 +61,9 @@ class MulticlassPerceptron():
 
     def train(self,traindata,trainlabels,source="News"):
         dictionary = self.dictionary
+        dictionary["Others"]=-1.0
         models = self.models
-        trainlabels=trainlabels.map(lambda categ:dictionary[categ]*(categ!="Others")+(-1.0)*(categ=="Others"))
+        trainlabels=trainlabels.map(lambda categ:dictionary[categ])
         for i in range(self.numClasses):
             labelforone = trainlabels.map(lambda x: 1.0*(x==i)+(-1.0)*(x!=i))
             if source =="News":
