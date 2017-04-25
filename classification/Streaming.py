@@ -14,8 +14,9 @@ import tweets_category_predict_nb
 sc=pyspark.SparkContext(appName="akftest")
 sc.setLogLevel("WARN")
 ssc=pyspark.streaming.StreamingContext(sc,5)#second argument is the period of pulling data
-topic_1=["test"] #the topic of kafka
+topic_1=["feedback_B"] #the topic of kafka
 topic_2=["twitterstream_raw"]
+topic_3=["feedback_A"]
 model = PerceptronforRDD(2000)
 spark = SparkSession(sc)
 
@@ -86,10 +87,10 @@ def PreferencePerceptron(tf,label):
 
 
 #if rdd nonempty, do something
-def process(rdd):
+def process_feedback_B(rdd):
 	if rdd.count()!=0:
 		rdd = rdd.map(lambda x: x[-1])
-		#print rdd.collect()
+		print rdd.collect()
 		for element in rdd.collect():
 			data=json.loads(element)
 			print '\n\n\n\n\n\n\n'
@@ -110,7 +111,7 @@ def Tfml_tweets(data):
 	raw_data = sc.parallelize(data)
 	lines = raw_data.map(lambda doc: doc["tweet_text"]).map(lambda line: Row(sentence=line))
 	sentenceData = lines.toDF()
-	sentenceData.show()
+	#sentenceData.show()
 	tokenizer = Tokenizer(inputCol="sentence", outputCol="words")
 	wordsData = tokenizer.transform(sentenceData)
 	hashingTF = HashingTF(inputCol="words", outputCol="features", numFeatures=2000)
@@ -126,8 +127,8 @@ def process_tweets(rdd):
 		for element in rdd.collect():
 			data = json.loads(element)
 			tfml = Tfml_tweets(data)
-			print 'After Tf'
-			print tfml.collect()
+		#	print 'After Tf'
+		#	print tfml.collect()
 			labels=model.Predict(tfml)
 			print labels.collect()[0]
 			categories = tweets_category_predict_nb.predictTweetCategNB(tfml.collect(),sc)
@@ -148,10 +149,13 @@ kafkaparams={
 	"metadata.broker.list": "localhost:9092"
 }
 
-Stream_feedback = KafkaUtils.createDirectStream(ssc,topic_1,kafkaparams)
+Stream_feedback_B = KafkaUtils.createDirectStream(ssc,topic_1,kafkaparams)
+Stream_feedback_B.pprint()
+Stream_feedback_A = KafkaUtils.createDirectStream(ssc,topic_3,kafkaparams)
+Stream_feedback_A.pprint()
 Stream_rawtweets = KafkaUtils.createDirectStream(ssc,topic_2,kafkaparams)
 #operate rdd
-Stream_feedback.foreachRDD(lambda k: process(k))
+Stream_feedback_B.foreachRDD(lambda k: process_feedback_B(k))
 Stream_rawtweets.pprint()
 Stream_rawtweets.foreachRDD(lambda k: process_tweets(k))
 
