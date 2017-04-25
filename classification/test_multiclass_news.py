@@ -7,8 +7,9 @@ reload(sys)
 sys.setdefaultencoding('UTF8')
 from pyspark.ml.classification import NaiveBayes,NaiveBayesModel
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator
-from perceptron import PerceptronforRDD, PerceptronOVRforDF
-
+from perceptron import PerceptronforRDD
+from tweets_category_predict_nb import predictTweetCategNB
+from tweets_category_predict_perceptron import predictTweetCategPerceptron
 
 
 sc = SparkContext()
@@ -41,27 +42,14 @@ dictionary = {'Art & Design':0,'World':1,'Sports':2,'Fashion & Style':3,'Books':
             'Television':6,'Movies':7,'Technology':8,'Science':9,'Food':10,'Real Estate':11,'Theater':12, \
             'Health':13,'Travel':14,'Education':15,'Your Money':16,'Politics':17,'Economy':18}
 labeleddata = data0.select(data0.label.cast("double").alias('label'),'features').na.drop()
-(train, test) = labeleddata.randomSplit([0.8, 0.2])
 labeleddata.cache()
+(train, test) = labeleddata.randomSplit([0.9, 0.1])
 """
 Multiclass Perceptron
 """
 
-dataset = train#.randomSplit([0.8, 0.2])
+dataset = labeleddata
 
-'''
-labels = test.select('label').rdd.map(lambda row: row.label).collect()
-modelmulti = PerceptronOVRforDF(numFeatures=2000, numClasses=19)
-[w,b] = modelmulti.PerceptronRDDOVR(dataset)
-#print "w:", w.take(5)
-#print "b:", b.collect()
-preds = modelmulti.Predict(test.select('features').rdd.map(lambda row: row.features)).collect()
-err = [1*(labels[i] in preds[i]) for i in range(len(labels))]
-errrate = float(sum(err))/float(len(labels))
-print "Perceptron error rate:", errrate
-'''
-
-"""
 traindata = dataset.select('features').rdd.map(lambda row: row.features)
 trainlabels = dataset.select('label').rdd.map(lambda row: row.label)#.collect()
 models = []
@@ -69,9 +57,9 @@ models = []
 
 numclasses = 19
 models = []
-
+model_param = {}
 num = trainlabels.count()
-pred_categ = {}
+errors = []
 for i in range(numclasses):
     models.append(PerceptronforRDD(numFeatures=2000))
     labelforone = trainlabels.map(lambda x: 1.0*(x==i)+(-1.0)*(x!=i))
@@ -79,31 +67,36 @@ for i in range(numclasses):
     #print dataYES.take(10)
     count = dataYES.count()
     frac = float(count)/float(num-count)
-    for j in range(3):
+    for j in range(1):
         dataNO = labelforone.zip(traindata).filter(lambda x: x[0]==-1).sample(False,frac,1)
         dataCOM = dataYES.union(dataNO)
         data = dataCOM.map(lambda x: x[1])
         label = dataCOM.map(lambda x: x[0])
         models[i].AveragePerceptron(data,label)
+    parameters = {"w":models[i].w.tolist(),"b":models[i].b,"u_avg":models[i].u_avg.tolist(),"beta_avg":models[i].beta_avg,"count_avg":models[i].count_avg}
+    model_param[category[i]]=parameters
     preds = models[i].Predict(traindata)
-    err = labelforone.zip(preds).map(lambda (x,y):1.0*(x!=y)+0.0).collect()
-    errYES = labelforone.zip(preds).map(lambda (x,y):1.0*(x!=y and x==1)+0.0).collect()
-    print "number of fraut predict 1s for",category[i],":", sum(errYES)
-    print "number of actual 1s is:", labelforone.map(lambda x: 1.0*(x==1)+(0.0)*(x==-1)).sum()
-    errrate = float(sum(err))/float(len(err))
-    print "error rate of",category[i],"category is:", errrate
-    #p = preds.zip(traindata).reduceByKey(lambda p,q: [p]+[q])
-    #pred_categ[category[i]]=p.top(1)
-#print pred_categ[category[i]]
+    err = labelforone.zip(preds).map(lambda (x,y):1.0*(x!=y)+0.0).sum()
+    errYES = labelforone.zip(preds).map(lambda (x,y):1.0*(x!=y and x==1)+0.0).sum()
+    trueYES = labelforone.map(lambda x: 1.0*(x==1)+(0.0)*(x==-1)).sum()
+    errorRate=float(err)/float(num)
+    errors.append(Row(category=category[i],trueTrue=int(trueYES-errYES),faultTrue=int(errYES), \
+                    faultFault=int(err-errYES),trueFault=int(num-err-trueYES+errYES),errorRate=float(err)/float(num)))
+    print "error rate of",category[i],"category is:", errorRate
 
-"""
+errDF = sc.parallelize(errors).toDF()
+errDF.show()
+json_file = "perceptronModels.json"
+with open(json_file, 'w') as outfile:
+    json.dump(model_param, outfile)
+print "write models parameters to file complete"
 
 
 
 """
 NaiveBayes
 """
-
+"""
 
 # create the trainer and set its parameters
 nb = NaiveBayes(smoothing=1.0, modelType="multinomial")
@@ -114,17 +107,20 @@ model = nb.fit(train)
 #sameModel = NaiveBayesModel.load("/Users/Jillian/Documents/Python/large_data_pj/NaiveBayes_model/")
 
 # select example rows to display.
-tt = test.select("features").rdd.map(lambda x: x.features)
+tt = test.select("features").rdd.map(lambda x: x.features).collect()
+"""
 """
 Here, replace tt in tt.map() as testtf
+"""
 """
 tt = tt.map(lambda x: Row(features=x)).toDF()
 tt.show()
 predictions = model.transform(tt)
 #predictions.show()
-labels = predictions.select("prediction").rdd.map(lambda x: category[int(x.prediction)]).collect()
+
+labels = predictTweetCategNB(tt,sc)
 print labels[:10]
-"""
+
 # compute accuracy on the test set
 evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction",
                                               metricName="accuracy")
