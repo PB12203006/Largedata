@@ -20,7 +20,7 @@ es = Elasticsearch(
     connection_class=RequestsHttpConnection
 )
 
-def pull(category,max_num=10):
+def pull(category,trigger,max_num=10):
 	L=[]
 	like=category+'_like'
 	dislike=category+'_dislike'
@@ -29,11 +29,13 @@ def pull(category,max_num=10):
 	for element in response['hits']['hits']:
 		print element['_source']
 		L.append(element['_source']['tweet_text'])
-		es.delete('tweets',like,element['_id'])
+		if trigger==1:
+			es.delete('tweets',like,element['_id'])
 	if len(L)<10:
 		response_2 = es.search(index='tweets',doc_type=dislike,size=max_num-len(L))
 		for element in response_2['hits']['hits']:
 			L.append(element['_source']['tweet_text'])
-			es.delete('tweets',dislike,element['_id'])
+			if trigger==1:
+				es.delete('tweets',dislike,element['_id'])
 	print L
 	return L

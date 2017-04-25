@@ -13,23 +13,33 @@ def hello():
 
 @application.route("/feedback")
 def feedback():
-	f=request.args.getlist('f[]')
+	f_A=request.args.getlist('f_A[]')
+	f_B=request.args.getlist('f_B[]')
 	t=request.args.getlist('text[]')
 	category=request.args.get('category')
+	trigger=int(request.args.get('trigger'))
 	print 'category',category
-	y=[int(i) for i in f]
-	z=[str(i) for i in t]
-	print y
-	tuple=[]
-	for i in range(len(y)):
-		if z[i]!='Tooooo fast!!' and z[i]!='ready?':
-			tuple.append({'text':z[i],'label':y[i]})
-	print tuple
+	feedback_A=[str(i) for i in f_A]
+	feedback_B=[int(i) for i in f_B]
+	txt=[str(i) for i in t]
+	print 'A',feedback_A
+	print 'B',feedback_B
+	print 'T',txt
+	tuple_A=[]
+	tuple_B=[]
+	for i in range(len(f_A)):
+		if txt[i]!='Tooooo fast!!' and txt[i]!='ready?':
+			tuple_B.append({'text':txt[i],'label':feedback_B[i]})
+			tuple_A.append({'text':txt[i],'category':feedback_A[i]})
+	print 'tuple_B',tuple_B,'tuple_B'
+	print 'tuple_A',tuple_A,'tuple_A'
 
-	if len(tuple)!=0:
-		push.push(json.dumps(tuple))
+	if len(tuple_B)!=0:
+		push.push('feedback_B',json.dumps(tuple_B))
+		if trigger==1:
+			push.push('feedback_A',json.dumps(tuple_A))
 
-	text=Pull_from_ES.pull(str(category))
+	text=Pull_from_ES.pull(str(category),0)
 	#text=['x','y']
 	myvar={'text':text}
 	jvar=json.dumps(myvar)

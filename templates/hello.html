@@ -40,7 +40,7 @@
 	</head>
 	<body>
 		<h3 style="text-align:center;">Second Masterpiece of Princess Lan and Her Faithful Photographer Mina Lisa<!--Demo--></h3>
-		
+        <p>select interested field</p>
         <select id='selector'>
             <option>World</option>
             <option>Sports</option>
@@ -62,6 +62,11 @@
             <option>Economy</option>
             <option>Art & Design</option>
         </select>
+        <p>help us optimize classifier?</p>
+        <input type="radio" id="C_A_Agree" name="fb" value="1" />
+        <label for="C_A_Agree">Yep</label>
+        <input type="radio" id="C_A_Disagree" name="fb" value="-1" />
+        <label for="C_A_Disagree">Nope</label>
     	<form id='form'>
     		<p0>{{init_t[0]}}</p0>
     		<br>
@@ -69,8 +74,9 @@
     		<label for="like_0">Like</label>
     		<input type="radio" id="dislike_0" name="img_0" value="-1" />
     		<label for="dislike_0">Dislike</label>
-            <select id='selector_0'>
+            <select id='selector_0' name='s0'>
                 <option>correct</option>
+                <option>Others</option>
                 <option>World</option>
                 <option>Sports</option>
                 <option>Fashion & Style</option>
@@ -98,8 +104,9 @@
     		<label for="like_1">Like</label>
     		<input type="radio" id="dislike_1" name="img_1" value="-1" />
     		<label for="dislike_1">Dislike</label>
-            <select id='selector_1'>
+            <select id='selector_1' name='s1'>
                 <option>correct</option>
+                <option>Others</option>
                 <option>World</option>
                 <option>Sports</option>
                 <option>Fashion & Style</option>
@@ -127,8 +134,9 @@
     		<label for="like_2">Like</label>
     		<input type="radio" id="dislike_2" name="img_2" value="-1" />
     		<label for="dislike_2">Dislike</label>
-            <select id='selector_2'>
+            <select id='selector_2' name='s2'>
                 <option>correct</option>
+                <option>Others</option>
                 <option>World</option>
                 <option>Sports</option>
                 <option>Fashion & Style</option>
@@ -156,8 +164,9 @@
     		<label for="like_3">Like</label>
     		<input type="radio" id="dislike_3" name="img_3" value="-1" />
     		<label for="dislike_3">Dislike</label>
-            <select id='selector_3'>
+            <select id='selector_3' name='s3'>
                 <option>correct</option>
+                <option>Others</option>
                 <option>World</option>
                 <option>Sports</option>
                 <option>Fashion & Style</option>
@@ -185,8 +194,9 @@
     		<label for="like_4">Like</label>
     		<input type="radio" id="dislike_4" name="img_4" value="-1" />
     		<label for="dislike_4">Dislike</label>
-            <select id='selector_4'>
+            <select id='selector_4' name='s4'>
                 <option>correct</option>
+                <option>Others</option>
                 <option>World</option>
                 <option>Sports</option>
                 <option>Fashion & Style</option>
@@ -214,8 +224,9 @@
     		<label for="like_5">Like</label>
     		<input type="radio" id="dislike_5" name="img_5" value="-1" />
     		<label for="dislike_5">Dislike</label>
-            <select id='selector_5'>
+            <select id='selector_5' name='s5'>
                 <option>correct</option>
+                <option>Others</option>
                 <option>World</option>
                 <option>Sports</option>
                 <option>Fashion & Style</option>
@@ -243,8 +254,9 @@
     		<label for="like_6">Like</label>
     		<input type="radio" id="dislike_6" name="img_6" value="-1" />
     		<label for="dislike_6">Dislike</label>
-            <select id='selector_6'>
+            <select id='selector_6' name='s6'>
                 <option>correct</option>
+                <option>Others</option>
                 <option>World</option>
                 <option>Sports</option>
                 <option>Fashion & Style</option>
@@ -272,8 +284,9 @@
     		<label for="like_7">Like</label>
     		<input type="radio" id="dislike_7" name="img_7" value="-1" />
     		<label for="dislike_7">Dislike</label>
-            <select id='selector_7'>
+            <select id='selector_7' name='s7'>
                 <option>correct</option>
+                <option>Others</option>
                 <option>World</option>
                 <option>Sports</option>
                 <option>Fashion & Style</option>
@@ -301,8 +314,9 @@
     		<label for="like_8">Like</label>
     		<input type="radio" id="dislike_8" name="img_8" value="-1" />
     		<label for="dislike_8">Dislike</label>
-            <select id='selector_8'>
+            <select id='selector_8' name='s8'>
                 <option>correct</option>
+                <option>Others</option>
                 <option>World</option>
                 <option>Sports</option>
                 <option>Fashion & Style</option>
@@ -330,8 +344,9 @@
     		<label for="like_9">Like</label>
     		<input type="radio" id="dislike_9" name="img_9" value="-1" />
     		<label for="dislike_9">Dislike</label>
-            <select id='selector_9'>
+            <select id='selector_9' name='s9'>
                 <option>correct</option>
+                <option>Others</option>
                 <option>World</option>
                 <option>Sports</option>
                 <option>Fashion & Style</option>
@@ -358,20 +373,39 @@
         <h4></h4>
 		<script>
 			function feedback(){
-				var f=new Array();
+                var trigger = $('input[name=fb]:checked').val();
+                console.log(trigger);
+                console.log('trigger');
+				var f_A=new Array();
+                var f_B=new Array();
                 var text=[];
 				var i;
+                var category=$('#selector').find('option:selected').text();
+                var form = $('#form').serializeArray();
+                for(i=0;i<form.length;i++)
+                {
+                    if(form[i]['name'][0]=='s')
+                    {
+                        if(form[i]['value']=='correct')
+                            f_A.push(category);
+                        else
+                            f_A.push(form[i]['value']);
+                    }
+                }
+
 				for(i=0;i<10;i++)
 				{
-					var ipt='input[name=img_'+String(i)+']:checked';
-					f.push($(ipt).val());
+					var ipt_B='input[name=img_'+String(i)+']:checked';
+					f_B.push($(ipt_B).val());
                     text.push($('p'+String(i)).text());
 				}
-                var category=$('#selector').find('option:selected').text();
                 console.log(category);
-				console.log(f);
+                console.log('B');
+				console.log(f_B);
+                console.log('A');
+                console.log(f_A);
                 console.log(text);
-				$.getJSON($SCRIPT_ROOT+'/feedback',{'f':f,'text':text,'category':category},function(data){
+				$.getJSON($SCRIPT_ROOT+'/feedback',{'f_A':f_A,'f_B':f_B,'text':text,'category':category,'trigger':trigger},function(data){
                 	console.log(data);
                     console.log(data.text.length)
                 	for(i=0;i<data.text.length;i++)
