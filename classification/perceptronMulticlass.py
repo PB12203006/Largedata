@@ -19,15 +19,7 @@ class MulticlassPerceptron():
         preds = models[0].Predict(testtf)
         preds = preds.map(lambda x:[category[0]]*(int(x)==1) + []*(int(x)==-1))
         for i in range(1,19):
-            #i =dictionary[categ]
-            #print "w:",models[i].w
-            #print "b:",models[i].b
-            #print "count_avg:",models[i].count_avg
             preds = preds.zip(models[i].Predict(testtf)).map(lambda x:(x[0]+[category[i]])*(int(x[1])==1)+x[0]*(int(x[1])==-1))
-            #if preds.first()==1:
-            #        categoryPredict.append(categ)
-        #if categoryPredict==[]:
-        #    categoryPredict.append("Others")
         preds = preds.map(lambda x: ["Others"]*(not x)+x)
         #print preds.collect()
         return preds.collect()
