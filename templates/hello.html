@@ -7,10 +7,12 @@
         		padding: 0;
         		height: 100%;
         		width: 100%;
+                /*
         		background-image: url('/static/teresahead.png');
         		background-size: 30%;
         		background-position: 10% 70%;
         		background-repeat: no-repeat;
+                */
                 
 			}
 			body {
@@ -19,19 +21,21 @@
         		height: 100%;
         		width: 100%;
         		text-align: center;
+                /*
                 background-image: url('/static/Teresa.png');
         		background-size: 45%;
         		background-position: 110% 70%;
         		background-repeat: no-repeat;
+                */
       		}
       		form{
-      			font-size: 100%;
+      			font-size: 130%;
       		}
       		h3{
-      			font-size: 220%;
+      			font-size: 170%;
       		}
       		label{
-      			font-size: 150%;
+      			font-size: 80%;
       		}
             select{
                 text-align: left;
@@ -63,11 +67,16 @@
             <option>Art & Design</option>
         </select>
         <p>help us optimize classifier?</p>
-        <input type="radio" id="C_A_Agree" name="fb" value="1" />
-        <label for="C_A_Agree">Yep</label>
-        <input type="radio" id="C_A_Disagree" name="fb" value="-1" />
-        <label for="C_A_Disagree">Nope</label>
-    	<form id='form'>
+        <input type="radio" name="trgr" value="3" />
+        <label>Both</label>
+        <input type="radio" name="trgr" value="2" />
+        <label>Categorize Only</label>
+        <input type="radio" name="trgr" value="1" />
+        <label>Customize Only</label>
+        <input type="radio" name="trgr" value="0" />
+        <label>Nope</label>
+    	<!--<form id='form'>-->
+            <br>
     		<p0>{{init_t[0]}}</p0>
     		<br>
     		<input type="radio" id="like_0" name="img_0" value="1" />
@@ -75,7 +84,7 @@
     		<input type="radio" id="dislike_0" name="img_0" value="-1" />
     		<label for="dislike_0">Dislike</label>
             <select id='selector_0' name='s0'>
-                <option>correct</option>
+                <option value='1'>correct</option>
                 <option>Others</option>
                 <option>World</option>
                 <option>Sports</option>
@@ -105,7 +114,7 @@
     		<input type="radio" id="dislike_1" name="img_1" value="-1" />
     		<label for="dislike_1">Dislike</label>
             <select id='selector_1' name='s1'>
-                <option>correct</option>
+                <option value='1'>correct</option>
                 <option>Others</option>
                 <option>World</option>
                 <option>Sports</option>
@@ -135,7 +144,7 @@
     		<input type="radio" id="dislike_2" name="img_2" value="-1" />
     		<label for="dislike_2">Dislike</label>
             <select id='selector_2' name='s2'>
-                <option>correct</option>
+                <option value='1'>correct</option>
                 <option>Others</option>
                 <option>World</option>
                 <option>Sports</option>
@@ -165,7 +174,7 @@
     		<input type="radio" id="dislike_3" name="img_3" value="-1" />
     		<label for="dislike_3">Dislike</label>
             <select id='selector_3' name='s3'>
-                <option>correct</option>
+                <option value='1'>correct</option>
                 <option>Others</option>
                 <option>World</option>
                 <option>Sports</option>
@@ -195,7 +204,7 @@
     		<input type="radio" id="dislike_4" name="img_4" value="-1" />
     		<label for="dislike_4">Dislike</label>
             <select id='selector_4' name='s4'>
-                <option>correct</option>
+                <option value='1'>correct</option>
                 <option>Others</option>
                 <option>World</option>
                 <option>Sports</option>
@@ -225,7 +234,7 @@
     		<input type="radio" id="dislike_5" name="img_5" value="-1" />
     		<label for="dislike_5">Dislike</label>
             <select id='selector_5' name='s5'>
-                <option>correct</option>
+                <option value='1'>correct</option>
                 <option>Others</option>
                 <option>World</option>
                 <option>Sports</option>
@@ -255,7 +264,7 @@
     		<input type="radio" id="dislike_6" name="img_6" value="-1" />
     		<label for="dislike_6">Dislike</label>
             <select id='selector_6' name='s6'>
-                <option>correct</option>
+                <option value='1'>correct</option>
                 <option>Others</option>
                 <option>World</option>
                 <option>Sports</option>
@@ -285,7 +294,7 @@
     		<input type="radio" id="dislike_7" name="img_7" value="-1" />
     		<label for="dislike_7">Dislike</label>
             <select id='selector_7' name='s7'>
-                <option>correct</option>
+                <option value='1'>correct</option>
                 <option>Others</option>
                 <option>World</option>
                 <option>Sports</option>
@@ -315,7 +324,7 @@
     		<input type="radio" id="dislike_8" name="img_8" value="-1" />
     		<label for="dislike_8">Dislike</label>
             <select id='selector_8' name='s8'>
-                <option>correct</option>
+                <option value='1'>correct</option>
                 <option>Others</option>
                 <option>World</option>
                 <option>Sports</option>
@@ -345,7 +354,7 @@
     		<input type="radio" id="dislike_9" name="img_9" value="-1" />
     		<label for="dislike_9">Dislike</label>
             <select id='selector_9' name='s9'>
-                <option>correct</option>
+                <option value='1'>correct</option>
                 <option>Others</option>
                 <option>World</option>
                 <option>Sports</option>
@@ -369,36 +378,55 @@
             </select>
     		<br>
     		<input id="like" type="button" value="Submit" onclick="feedback();"/>
-    	</form>
+    	<!--</form>-->
         <h4></h4>
 		<script>
+            var topic = 'World';
 			function feedback(){
-                var trigger = $('input[name=fb]:checked').val();
+                var trigger = $('input[name=trgr]:checked').val();
                 console.log(trigger);
                 console.log('trigger');
 				var f_A=new Array();
                 var f_B=new Array();
                 var text=[];
 				var i;
-                var category=$('#selector').find('option:selected').text();
+                /*
                 var form = $('#form').serializeArray();
                 for(i=0;i<form.length;i++)
                 {
                     if(form[i]['name'][0]=='s')
                     {
                         if(form[i]['value']=='correct')
-                            f_A.push(category);
+                            f_A.push(topic);
                         else
                             f_A.push(form[i]['value']);
                     }
-                }
-
+                }*/
+                
+                var trigger_B=1;
 				for(i=0;i<10;i++)
 				{
 					var ipt_B='input[name=img_'+String(i)+']:checked';
+                    if($(ipt_B).val()==undefined)
+                    {
+                        trigger_B=0;
+                    }
 					f_B.push($(ipt_B).val());
+
+                    var ipt_A='#selector_'+String(i)
+                    if($(ipt_A).find('option:selected').text()=='correct')
+                    {
+                        f_A.push(topic);
+                    }
+                    else
+                        f_A.push($(ipt_A).find('option:selected').text());
+
                     text.push($('p'+String(i)).text());
 				}
+                var category=$('#selector').find('option:selected').text();
+                topic = category;
+                if(trigger_B==0)
+                    f_B=[0,0,0];
                 console.log(category);
                 console.log('B');
 				console.log(f_B);
@@ -421,6 +449,11 @@
                     }
                   //  $('h4').text(data.label);
             	});
+                for(i=0;i<10;i++)
+                {
+                    $("#selector_"+String(i)).val('1');
+                }
+                
 			}
             /*
             function prnt(){

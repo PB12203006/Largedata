@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			html {
+				margin: 0;
+        		padding: 0;
+        		height: 100%;
+        		width: 100%;
+        		background-image: url('/static/teresahead.png');
+        		background-size: 30%;
+        		background-position: 10% 70%;
+        		background-repeat: no-repeat;
+                
+			}
+			body {
+        		margin: 0;
+        		padding: 0;
+        		height: 100%;
+        		width: 100%;
+        		text-align: center;
+                background-image: url('/static/Teresa.png');
+        		background-size: 45%;
+        		background-position: 110% 70%;
+        		background-repeat: no-repeat;
+      		}
+      		form{
+      			font-size: 130%;
+      		}
+      		h3{
+      			font-size: 170%;
+      		}
+      		label{
+      			font-size: 80%;
+      		}
+            select{
+                text-align: left;
+            }
+		</style>
+	</head>
+	<body>
+		<h3 style="text-align:center;">Second Masterpiece of Princess Lan and Her Faithful Photographer Mina Lisa<!--Demo--></h3>
+        <p>select interested field</p>
+        <select id='selector'>
+            <option>World</option>
+            <option>Sports</option>
+            <option>Fashion & Style</option>
+            <option>Books</option>
+            <option>Music</option>
+            <option>Television</option>
+            <option>Movies</option>
+            <option>Technology</option>
+            <option>Science</option>
+            <option>Food</option>
+            <option>Real Estate</option>
+            <option>Theater</option>
+            <option>Health</option>
+            <option>Travel</option>
+            <option>Education</option>
+            <option>Your Money</option>
+            <option>Politics</option>
+            <option>Economy</option>
+            <option>Art & Design</option>
+        </select>
+        <p0></p0>
+        <p1></p1>
+        <p2></p2>
+        <p3></p3>
+        <p4></p4>
+        <p5></p5>
+        <p6></p6>
+        <p7></p7>
+        <p8></p8>
+        <p9></p9>
+            <br></br>
+    		<input id="like" type="button" value="Submit" onclick="getnews();"/>
+        <h4></h4>
+		<script>
+			function feedback(){
+                var category=$('#selector').find('option:selected').text();
+                console.log(category);
+				$.getJSON($SCRIPT_ROOT+'/feedback',{'category':category},function(data){
+                	console.log(data);
+                    console.log(data.text.length)
+                	for(i=0;i<data.text.length;i++)
+                	{
+                		$('p'+String(i)).text(data.text[i]);
+                	}
+                    if(data.text.length<10)
+                    {
+                        for(i=data.text.length;i<10;i++)
+                        {
+                            $('p'+String(i)).text('Tooooo fast!!');
+                        }
+                    }
+            	});
+			}
+		</script>
+		<script type=text/javascript>
+    		$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+    	</script>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	</body>
+</html>
