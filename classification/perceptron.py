@@ -132,9 +132,9 @@ class PerceptronforRDD():
 		b = self.b
 		predict = data.map(lambda x: x.dot(w)+b)
 		predict = predict.map(lambda p: -1.0*(p<=0)+1.0*(p>0))
-		print(["predict",predict.count(),predict.first()])
+		#print(["predict",predict.count(),predict.first()])
 		#label = label.map(lambda x: -1.0*(x==0 or x==-1)+1.0*(x==1))
-		print(["label",label.count(),label.first()])
+		#print(["label",label.count(),label.first()])
 		ones = predict.zip(label)
 		err = ones.map(lambda (x,y): 0*(x==y)+1*(x!=y)).sum()
 		#print(err)

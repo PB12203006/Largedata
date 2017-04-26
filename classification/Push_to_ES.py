@@ -23,11 +23,11 @@ es = Elasticsearch(
 
 def push(ind,category,bd):
 	bd=json.loads(bd)
-	es.index(index=ind,doc_type=category,body=bd)
+	es.index(index=ind,doc_type=category,body=bd,timeout='3000s')
 	es.indices.refresh(index=ind)
 	count = es.count(ind, category)['count']
-	if count >100:
+	if count >1000:
 		response = es.search(index=ind,doc_type=category)
 		ids = [x["_id"] for x in response["hits"]["hits"]]
-		for x in ids[:count-100]:
+		for x in ids[:count-1000]:
 			es.delete(ind,category,x)
