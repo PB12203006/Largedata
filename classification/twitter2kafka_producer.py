@@ -16,7 +16,7 @@ import json
 import string
 import random
 import time
-#import tweet_utils
+import tweet_utils
 #import boto3
 #from perceptron import PerceptronforRDD
 #from pyspark.mllib.feature import HashingTF, IDF
@@ -70,15 +70,19 @@ class TwitterListener(StreamListener):
                        "tweet_text": tweet["text"]
                        }
 
-                #convert doc to list for convenience 
+                tweet_utils._sentiment_analysis(doc)
+
+                #convert doc to list for convenience
                 #listed_doc = []
                 #listed_doc.append(doc)
                 #json_body = json.dumps(listed_doc)
                 json_body = json.dumps(doc)
                 #print json_body
                 # Send messages to Kafka Topic 'twitterstream'
-                if random.randint(1,40)==3:
-                    self.producer.send('twitterstream_raw', json_body)
+                if doc["sentiment"] in ['Positive','Neutral']:
+                    self.producer.send('twitterstream', json_body)
+                #if random.randint(1,40)==3:
+                #    self.producer.send('twitterstream_raw', json_body)
                     print json_body
                     print 'Write To Kafka Complete' + '\n'
                 #print '\n\n\n'
