@@ -27,7 +27,7 @@ dictionary = {'Art & Design':0,'World':1,'Sports':2,'Fashion & Style':3,'Books':
             'Health':13,'Travel':14,'Education':15,'Your Money':16,'Politics':17,'Economy':18}
 
 multiperceptron = MulticlassPerceptron(numFeatures=2000,numClasses=19,dictionary=dictionary,category=categ)
-perceptronmodels = multiperceptron.load("/home/pb12203006/Documents/Largedata_with_Princess/classification/perceptronModels.json")
+perceptronmodels = multiperceptron.load("/home/pb12203006/Documents/Largedata_with_Princess/classification/perceptronModels.json",average=False)
 tokenizer = Tokenizer(inputCol="sentence", outputCol="words")
 hashingTF = HashingTF(inputCol="words", outputCol="features", numFeatures=2000)
 hashingTFmllib = HashingTFmllib(numFeatures=2000)
