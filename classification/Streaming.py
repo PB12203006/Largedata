@@ -26,6 +26,7 @@ dictionary = {'Art & Design':0,'World':1,'Sports':2,'Fashion & Style':3,'Books':
             'Television':6,'Movies':7,'Technology':8,'Science':9,'Food':10,'Real Estate':11,'Theater':12, \
             'Health':13,'Travel':14,'Education':15,'Your Money':16,'Politics':17,'Economy':18}
 
+categ_fb_count = 1
 multiperceptron = MulticlassPerceptron(numFeatures=2000,numClasses=19,dictionary=dictionary,category=categ)
 perceptronmodels = multiperceptron.load("/home/pb12203006/Documents/Largedata_with_Princess/classification/perceptronModels.json",average=False)
 tokenizer = Tokenizer(inputCol="sentence", outputCol="words")
@@ -55,11 +56,14 @@ def process_feedback_A(rdd):
 		models =multiperceptron.train(tfml,category)
 		print "actrual category:", data[0]["category"]
 		print "count perceptron classifier after training:", models[0].count_avg
+        if models[0].count_avg-categ_fb_count >=50:
+            multiperceptron.save("/home/pb12203006/Documents/Largedata_with_Princess/classification/perceptronModels.json")
+            categ_fb_count=models[0].count_avg
 		print "predict tweet category:", multiperceptron.predict(tfml)
 		print "\n"
 
-		
-			
+
+
 
 #if rdd nonempty, do something
 def process_feedback_B(rdd):
@@ -84,7 +88,7 @@ def process_feedback_B(rdd):
 		errrate = model.PredictErrrate(tfmllib,labels)
 		print('Training error rate:', errrate)
 		print '\n\n\n\n\n\n'
-		
+
 
 def process_tweets(rdd):
 	if rdd.count()!=0:
