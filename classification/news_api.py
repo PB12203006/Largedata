@@ -172,38 +172,3 @@ outfile.close()
 (u'World', 4426)
 19
 """
-"""
-raw_data = sc.textFile("/Users/Jillian/Documents/Python/large_data_pj/news_sections_abstract2016.txt")
-lines = raw_data.map(lambda line: line.split("  ")).map(lambda line: (line[0]," ".join(line[1:])))
-sentenceData = spark.createDataFrame(lines,["label", "sentence"])
-
-from pyspark.ml.feature import HashingTF, IDF, Tokenizer
-tokenizer = Tokenizer(inputCol="sentence", outputCol="words")
-wordsData = tokenizer.transform(sentenceData)
-hashingTF = HashingTF(inputCol="words", outputCol="features", numFeatures=200000)
-featurizedData = hashingTF.transform(wordsData)
-featurizedData.show()
-
-df = featurizedData.select('label','features')
-data0 = df.replace(['World','Sports','Fashion & Style','Books','Music', \
-            'Television','Movies','Technology','Science','Food','Real Estate','Theater', \
-            'Health','Travel','Education','Your Money','Politics','Economy','Art & Design'] \
-            ,['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','0'],'label')
-labeleddata = data0.select(data0.label.cast("double").alias('label'),'features').na.drop()
-(train, test) = labeleddata.randomSplit([0.7, 0.3])
-
-# create the trainer and set its parameters
-nb = NaiveBayes(smoothing=1.0, modelType="multinomial")
-
-model = nb.fit(train)
-
-# select example rows to display.
-predictions = model.transform(test)
-predictions.show()
-
-# compute accuracy on the test set
-evaluator = MulticlassClassificationEvaluator(labelCol="label", predictionCol="prediction",
-                                              metricName="accuracy")
-accuracy = evaluator.evaluate(predictions)
-print("Test set accuracy = " + str(accuracy))
-"""
