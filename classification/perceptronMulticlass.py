@@ -76,7 +76,7 @@ class MulticlassPerceptron():
             json.dump(model_param, outfile)
         print "write models parameters to file complete! path:",path_json
 
-    def train(self,traindata,trainlabels,method="Average",source="Feedback"):
+    def train(self,traindata,trainlabels,method="Average",source="Feedback", MaxItr=10):
         dictionary = self.dictionary
         #dictionary["Others"] = -1
         models = self.models
@@ -92,12 +92,10 @@ class MulticlassPerceptron():
             labelforone = trainlabels.map(lambda x: 1.0*(x==i)+(-1.0)*(x!=i))
             #print "training model",i,labelforone.collect()
             if method == "Online":
-                models[i].PerceptronBatch(traindata,labelforone)
-            elif method =="Average" and source =="News":
-                models[i].AveragePerceptron(traindata,labelforone,MaxItr=1)
-            elif method =="Average" and source =="Feedback":
+                models[i].PerceptronBatch(traindata,labelforone,MaxItr=MaxItr)
+            elif method =="Average":
                 #models[i].PerceptronBatch(traindata,labelforone)
-                models[i].AveragePerceptron(traindata,labelforone,MaxItr=10)
+                models[i].AveragePerceptron(traindata,labelforone,MaxItr=MaxItr)
             else:
                 print "please choose source from ['News','Feedback']"
         self.models = models
