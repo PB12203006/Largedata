@@ -26,7 +26,7 @@ dictionary = {'Art & Design':0,'World':1,'Sports':2,'Fashion & Style':3,'Books':
             'Television':6,'Movies':7,'Technology':8,'Science':9,'Food':10,'Real Estate':11,'Theater':12, \
             'Health':13,'Travel':14,'Education':15,'Your Money':16,'Politics':17,'Economy':18}
 
-categ_fb_count = 1
+categ_fb_count = 0
 multiperceptron = MulticlassPerceptron(numFeatures=2000,numClasses=19,dictionary=dictionary,category=categ)
 perceptronmodels = multiperceptron.load("/home/pb12203006/Documents/Largedata_with_Princess/classification/perceptronModels.json",average=False)
 tokenizer = Tokenizer(inputCol="sentence", outputCol="words")
@@ -43,7 +43,7 @@ def process_feedback_A(rdd):
 				data = data+json.loads(listall[i])
 		#print data
 		raw_data = sc.parallelize(data)
-		print raw_data.first()
+		#print raw_data.first()
 		lines = raw_data.map(lambda doc: doc["text"])
 		lines = lines.map(lambda line: Row(sentence=line))
 		sentenceData = lines.toDF()
@@ -54,13 +54,16 @@ def process_feedback_A(rdd):
 		category = raw_data.map(lambda x:x["category"])
 		print "count perceptron classifier:", multiperceptron.models[0].count_avg
 		models =multiperceptron.train(tfml,category)
-		print "actrual category:", data[0]["category"]
-		print "count perceptron classifier after training:", models[0].count_avg
-        if models[0].count_avg-categ_fb_count >=50:
-            multiperceptron.save("/home/pb12203006/Documents/Largedata_with_Princess/classification/perceptronModels.json")
-            categ_fb_count=models[0].count_avg
+		#print "actrual category:", data[0]["category"]
+		print "count perceptron classifier after training:", multiperceptron.models[0].count_avg
 		print "predict tweet category:", multiperceptron.predict(tfml)
-		print "\n"
+		global categ_fb_count
+		categ_fb_count +=1
+		if categ_fb_count >=3:
+			multiperceptron.save("/home/pb12203006/Documents/Largedata_with_Princess/classification/perceptronModels.json")
+			categ_fb_count=1
+
+        print "\n"
 
 
 
@@ -83,10 +86,16 @@ def process_feedback_B(rdd):
 		tfmllib = hashingTFmllib.transform( ## Use much larger number in practice
  		   	training_raw.map(lambda doc: doc["text"].split(),
     		preservesPartitioning=True))
+		print 'Actual Preference'
+		print labels.collect()
+		print 'Before Updating'
+		errrate_before = model.PredictErrrate(tfmllib,labels)
+		print 'error rate: ', errrate_before
 		[w,b] = model.AveragePerceptron(tfmllib,labels)
 		#print('Perceptron weight:\n',[w,b])
-		errrate = model.PredictErrrate(tfmllib,labels)
-		print('Training error rate:', errrate)
+		print 'After Updating'
+		errrate_after = model.PredictErrrate(tfmllib,labels)
+		print 'error rate: ', errrate_after
 		print '\n\n\n\n\n\n'
 
 

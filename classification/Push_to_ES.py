@@ -26,8 +26,8 @@ def push(ind,category,bd):
 	es.index(index=ind,doc_type=category,body=bd,timeout='3000s')
 	es.indices.refresh(index=ind)
 	count = es.count(ind, category)['count']
-	if count >1000:
+	if count >100:
 		response = es.search(index=ind,doc_type=category)
 		ids = [x["_id"] for x in response["hits"]["hits"]]
-		for x in ids[:count-1000]:
+		for x in ids[:count-100]:
 			es.delete(ind,category,x)
