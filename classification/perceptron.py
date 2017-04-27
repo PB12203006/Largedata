@@ -47,7 +47,7 @@ def PerceptronPredict(testdata,w,b):
 	return predict
 
 class PerceptronforRDD():
-    def __init__(self,numFeatures=2000, w=np.zeros(2000),b=0,u_avg=np.zeros(2000),beta_avg = 0,count_avg = 1):
+    def __init__(self,numFeatures=2000, w=np.zeros(2000),b=0.0,u_avg=np.zeros(2000),beta_avg=0.0,count_avg =1.0):
 		if len(w)!= numFeatures:
 			self.w = np.zeros(numFeatures)
 			self.u_avg = np.zeros(numFeatures)
@@ -71,14 +71,18 @@ class PerceptronforRDD():
 		m = m.collect()
 		ind = range(len(m))
 		random.shuffle(ind)
-		for i in ind:
-			pred = m[i].dot(self.w)+self.b
-			if y[i]*pred<=0:
-				self.w = self.w+y[i]*m[i].toArray()
-				self.b = self.b+y[i]
+		for time in range(5):
+			random.shuffle(ind)
+			for i in ind:
+				pred = m[i].dot(self.w)+self.b
+				#print "label and predict:",y[i],pred
+				if y[i]*pred<=0:
+					#print "label and predict:",i,y[i],pred
+					self.w = self.w+y[i]*m[i].toArray()
+					self.b = self.b+y[i]
 		return [self.w, self.b]
 
-    def AveragePerceptron(self, data, label):
+    def AveragePerceptronOne(self, data, label):
 		label = label.map(lambda x: -1.0*(x==0.0 or x==-1.0)+(x==1.0))
 		label = label.collect()
 		data = data.collect()
@@ -91,33 +95,40 @@ class PerceptronforRDD():
 				self.b = self.b + label[i]
 				self.u_avg = self.u_avg + self.count_avg*label[i]*data[i].toArray()
 				self.beta_avg = self.beta_avg + self.count_avg*label[i]
-			self.count_avg += 1
+			self.count_avg += 1.0
 		self.w = self.w - self.u_avg/self.count_avg
-		self.beta_avg = self.b - self.beta_avg/self.count_avg
+		self.b = self.b - self.beta_avg/self.count_avg
 		return [self.w,self.b]
 
-    def AveragePerceptronFB(self, data, label):
+    def AveragePerceptron(self, data, label, MaxItr=3):
 		label = label.map(lambda x: -1.0*(x==0.0 or x==-1.0)+(x==1.0))
 		label = label.collect()
+		#data=data.map(lambda x: x/sum(x))
 		data = data.collect()
 		ind = range(len(data))
-		random.shuffle(ind)
-		for i in ind:
-			pred = data[i].dot(self.w) + self.b
-			for time in range(3):
+		for time in range(MaxItr):
+			random.shuffle(ind)
+			for i in ind:
+				pred = data[i].dot(self.w) + self.b
 				if label[i]*pred<=0:
+					#print "label and pred for",i,":",label[i],pred
+					#print "data:", data[i].toArray()
 					self.w = self.w + label[i]*data[i].toArray()
+					#print "b before train:",self.b
 					self.b = self.b + label[i]
+					#print "b after train:", self.b
 					self.u_avg = self.u_avg + self.count_avg*label[i]*data[i].toArray()
+					#print "beta_avg before train: ",self.beta_avg
 					self.beta_avg = self.beta_avg + self.count_avg*label[i]
-					self.count_avg += 1
-				else:
-					self.u_avg = self.u_avg + self.count_avg*label[i]*data[i].toArray()
-					self.beta_avg = self.beta_avg + self.count_avg*label[i]
-					self.count_avg += 1
+					#print "beta_avg after train:", self.beta_avg
+				#self.u_avg = self.u_avg + self.w
+				#self.beta = self.beta + self.b
+				self.count_avg += 1.0
+				#print "count number:", self.count_avg
 		self.w = self.w - self.u_avg/self.count_avg
-		self.beta_avg = self.b - self.beta_avg/self.count_avg
+		self.b = self.b - self.beta_avg/self.count_avg
 		return [self.w,self.b]
+
 
     def Predict(self,data):
         w = self.w
@@ -140,6 +151,35 @@ class PerceptronforRDD():
 		#print(err)
 		errrate = float(err)/float(label.count())
 		return errrate
+
+"""
+	def AveragePerceptronFB(self, data, label):
+		label = label.map(lambda x: -1.0*(x==0.0 or x==-1.0)+(x==1.0))
+		label = label.collect()
+		data = data.collect()
+		ind = range(len(data))
+		for time in range(1):
+			random.shuffle(ind)
+			for i in ind:
+				pred = data[i].dot(self.w) + self.b
+				if label[i]*pred<=0:
+					print "label and pred for",i,":",label[i],pred
+					print "data:", data[i].toArray()
+					self.w = self.w + label[i]*data[i].toArray()
+					print "b before train:",self.b
+					self.b = self.b + label[i]
+					print "b after train:", self.b
+					self.u_avg = self.u_avg + self.count_avg*label[i]*data[i].toArray()
+					print "beta_avg before train: ",self.beta_avg
+					self.beta_avg = self.beta_avg + self.count_avg*label[i]
+					print "beta_avg after train:", self.beta_avg
+				self.count_avg += 1.0
+				print "count number:", self.count_avg
+		self.w = self.w - self.u_avg/self.count_avg
+		print "type of b/u_avg/count_avg:", type(self.b), type(self.u_avg), type(self.count_avg)
+		self.b = self.b - self.beta_avg/self.count_avg
+		return [self.w,self.b]
+"""
 
 
 """

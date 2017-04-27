@@ -12,16 +12,38 @@ class MulticlassPerceptron():
         self.dictionary = dictionary
         self.category = category
 
+
     def predict(self,testtf):
+        category = self.category
+        models = self.models
+        numclass = self.numClasses
+        categoryPredict = []
+        preds = []
+        for i in range(numclass):
+            preds.append(models[i].Predict(testtf).collect())
+        #print "\nafter for loop\n",preds[:5]
+        for j in range(len(preds[0])):
+            categoryPredict.append([category[x] for x in range(19) if preds[x][j]==1])
+            if categoryPredict[j]==[]:
+                categoryPredict[j] = ["Others"]
+        #print "\nafter 2nd for loop\n",categoryPredict[:5]
+        return categoryPredict
+
+    def predict0(self,testtf):
         category = self.category
         models = self.models
         #categoryPredict = []
         preds = models[0].Predict(testtf)
-        preds = preds.map(lambda x:[category[0]]*(int(x)==1) + []*(int(x)==-1))
+        preds = preds.map(lambda x:[0,category[0]]*(int(x)==1) + [0]*(int(x)==-1))
+        #print "\nthe 0 time in for loop",preds.collect()
         for i in range(1,19):
-            preds = preds.zip(models[i].Predict(testtf)).map(lambda x:(x[0]+[category[i]])*(int(x[1])==1)+x[0]*(int(x[1])==-1))
-        preds = preds.map(lambda x: ["Others"]*(not x)+x)
-        #print preds.collect()
+            #print "\nmodel ",i,preds.collect()
+            preds = preds.zip(models[i].Predict(testtf))
+            #print "\nmodel after zip:",i,preds.collect()
+            preds = preds.map(lambda x:(x[0]+[category[i]])*(int(x[1])==1)+x[0]*(int(x[1])==-1))
+            #print "\nthe",i,"time in for loop", preds.collect()
+        preds = preds.map(lambda x: ["Others"]*(x[-1]==0)+x[1:]*(x[-1]!=0))
+        #print "\nafter for loop\n",preds.take(10)
         return preds.collect()
 
     def load(self,path_json,average=True):
@@ -34,7 +56,7 @@ class MulticlassPerceptron():
         #print "load category keys:", dictionary.keys()
         for categ in dictionary.keys():
             param = models_param[categ]
-            if average:
+            if average==True:
                 perceptronModels[dictionary[categ]]=PerceptronforRDD(w=np.array(param['w']),b=param['b'],u_avg=np.array(param['u_avg']),beta_avg=param['beta_avg'],count_avg=param['count_avg'])
             else:
                 perceptronModels[dictionary[categ]]=PerceptronforRDD(w=np.array(param['w']),b=param['b'])
@@ -54,17 +76,28 @@ class MulticlassPerceptron():
             json.dump(model_param, outfile)
         print "write models parameters to file complete! path:",path_json
 
-    def train(self,traindata,trainlabels,source="News"):
+    def train(self,traindata,trainlabels,method="Average",source="Feedback"):
         dictionary = self.dictionary
-        dictionary["Others"] = -1
+        #dictionary["Others"] = -1
         models = self.models
-        trainlabels=trainlabels.map(lambda categ: dictionary[categ] )
+        def mapDict(categ):
+            if categ == "Others":
+                return -1
+            else:
+                return dictionary[categ]
+        #print "training labels", trainlabels.collect()
+        trainlabels=trainlabels.map(mapDict)
+        #print "training labels after map", trainlabels.collect()
         for i in range(self.numClasses):
             labelforone = trainlabels.map(lambda x: 1.0*(x==i)+(-1.0)*(x!=i))
-            if source =="News":
-                models[i].AveragePerceptron(traindata,labelforone)
-            elif source =="Feedback":
-                models[i].AveragePerceptronFB(traindata,labelforone)
+            #print "training model",i,labelforone.collect()
+            if method == "Online":
+                models[i].PerceptronBatch(traindata,labelforone)
+            elif method =="Average" and source =="News":
+                models[i].AveragePerceptron(traindata,labelforone,MaxItr=1)
+            elif method =="Average" and source =="Feedback":
+                #models[i].PerceptronBatch(traindata,labelforone)
+                models[i].AveragePerceptron(traindata,labelforone,MaxItr=10)
             else:
                 print "please choose source from ['News','Feedback']"
         self.models = models

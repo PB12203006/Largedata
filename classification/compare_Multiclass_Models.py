@@ -9,12 +9,13 @@ sys.setdefaultencoding('UTF8')
 sc = SparkContext()
 spark = SparkSession.builder \
         .master("local") \
-        .appName("Word Count") \
+        .appName("Compare Multiclass Models") \
         .config("spark.some.config.option", "some-value") \
         .getOrCreate()
-
+numfeatures=2000
+numclasses = 19
 # Load news category data
-raw_data = sc.textFile("/Users/Jillian/Documents/Python/large_data_pj/news_sections_abstract2016.txt")
+raw_data = sc.textFile("/Users/Jillian/Documents/Python/large_data_pj/data/news_sections_abstract2016.txt")
 lines = raw_data.map(lambda line: line.split("  ")).map(lambda line: (line[0]," ".join(line[1:])))
 sentenceData = spark.createDataFrame(lines,["label", "sentence"])
 
@@ -22,7 +23,7 @@ sentenceData = spark.createDataFrame(lines,["label", "sentence"])
 from pyspark.ml.feature import HashingTF, IDF, Tokenizer
 tokenizer = Tokenizer(inputCol="sentence", outputCol="words")
 wordsData = tokenizer.transform(sentenceData)
-hashingTF = HashingTF(inputCol="words", outputCol="features", numFeatures=2000)
+hashingTF = HashingTF(inputCol="words", outputCol="features", numFeatures=numfeatures)
 featurizedData = hashingTF.transform(wordsData)
 #featurizedData.show()
 
@@ -181,7 +182,7 @@ testdataset = test
 testdata = testdataset.select('features').rdd.map(lambda row: row.features)
 testlabels = testdataset.select('label').rdd.map(lambda row: row.label)
 
-numclasses = 19
+
 models = []
 model_param = {}
 trainnum = trainlabels.count()
@@ -189,7 +190,7 @@ testnum = testlabels.count()
 errors = []
 for i in range(numclasses):
     labelforone = trainlabels.map(lambda x: 1.0*(x==i)+(-1.0)*(x!=i))
-    models.append(PerceptronforRDD(numFeatures=2000))
+    models.append(PerceptronforRDD(numFeatures=numfeatures))
 
     # Combine positive data with negative data on balance proportion
     dataYES = labelforone.zip(traindata).filter(lambda x:x[0]==1)
@@ -201,7 +202,8 @@ for i in range(numclasses):
     label = dataCOM.map(lambda x: x[0])
 
     # Train perceptron models for each class
-    models[i].AveragePerceptron(data,label)
+    models[i].PerceptronBatch(data,label)
+    models[i].AveragePerceptron(data,label,MaxItr=3)
 
     # save the parameters of perceptron model for each class
     parameters = {"w":models[i].w.tolist(),"b":models[i].b,"u_avg":models[i].u_avg.tolist(),"beta_avg":models[i].beta_avg,"count_avg":models[i].count_avg}
