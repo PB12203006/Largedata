@@ -7,4 +7,4 @@ producer = KafkaProducer(bootstrap_servers=['localhost:9092'])
 def push(topic,tuple):
 	global producer
 	producer.send(topic, tuple)
-	print 'pushed to', topic
+	print '\n\npushed to', topic

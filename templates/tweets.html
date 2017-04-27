@@ -65,82 +65,46 @@
             <option>Economy</option>
             <option>Art & Design</option>
         </select>
-        <br>
+        <br><br>
         <p0></p0>
-        <br>
-        <a id='0' href='init'><u0></u0></a>
-        <br>
+        <br><br>
         <p1></p1>
-        <br>
-        <a id='1' href='init'><u1></u1></a>
-        <br>
+        <br><br>
         <p2></p2>
-        <br>
-        <a id='2' href='init'><u2></u2></a>
-        <br>
+        <br><br>
         <p3></p3>
-        <br>
-        <a id='3' href='init'><u3></u3></a>
-        <br>
+        <br><br>
         <p4></p4>
-        <br>
-        <a id='4' href='init'><u4></u4></a>
-        <br>
+        <br><br>
         <p5></p5>
-        <br>
-        <a id='5' href='init'><u5></u5></a>
-        <br>
+        <br><br>
         <p6></p6>
-        <br>
-        <a id='6' href='init'><u6></u6></a>
-        <br>
+        <br><br>
         <p7></p7>
-        <br>
-        <a id='7' href='init'><u7></u7></a>
-        <br>
+        <br><br>
         <p8></p8>
-        <br>
-        <a id='8' href='init'><u8></u8></a>
-        <br>
+        <br><br>
         <p9></p9>
-        <br>
-        <a id='9' href='init'><u9></u9></a>
-        <br>
-    	<button id='btn' type="button" onclick="getnews();">Get News</button>
+        <br><br>
+    	<button id='btn' type="button" onclick="gettweets();">Get Tweets</button>
 		<script>
-			function getnews(){
+			function gettweets(){
                 var category=$('#selector').find('option:selected').text();
                 console.log(category);
-				$.getJSON($SCRIPT_ROOT+'/newsrefresh',{'category':category},function(data){
+				$.getJSON($SCRIPT_ROOT+'/tweetsrefresh',{'category':category},function(data){
                 	console.log(data);
-                    console.log(data.url.length)
-                	for(i=0;i<data.url.length;i++)
+                    console.log(data.text.length)
+                	for(i=0;i<data.text.length;i++)
                 	{
-                		//$('p'+String(i)).text('Abstract: '+data.abstract[i]);
-                        console.log(data.headline[i]);
-                        $('p'+String(i)).text('Headline: '+data.headline[i]);
+                        $('p'+String(i)).text(data.text[i]);
                 	}
-                    if(data.url.length<10)
+                    if(data.text.length<10)
                     {
-                        for(i=data.url.length;i<10;i++)
+                        for(i=data.text.length;i<10;i++)
                         {
                             $('p'+String(i)).text('Tooooo fast!!');
                         }
                     }
-                    for(i=0;i<data.url.length;i++)
-                    {
-                        $('u'+String(i)).text('url: '+data.url[i]);
-                        $('#'+String(i)).attr('href',data.url[i]);
-                    }
-                    if(data.url.length<10)
-                    {
-                        for(i=data.text.length;i<10;i++)
-                        {
-                            $('u'+String(i)).text('Tooooo fast!!');
-
-                        }
-                    }
-                    
             	});
 			}
 		</script>
