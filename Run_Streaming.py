@@ -31,7 +31,7 @@ dictionary = {'Art & Design':0,'World':1,'Sports':2,'Fashion & Style':3,'Books':
 categ_fb_count = 0
 multiperceptron = MulticlassPerceptron(numFeatures=2000,numClasses=19,dictionary=dictionary,category=categ)
 #load categorizing model
-perceptronmodels = multiperceptron.load("perceptronModels.json",average=False)
+perceptronmodels = multiperceptron.load("classification/models/perceptronModels.json",average=False)
 tokenizer = Tokenizer(inputCol="sentence", outputCol="words")
 hashingTF = HashingTF(inputCol="words", outputCol="features", numFeatures=2000)
 hashingTFmllib = HashingTFmllib(numFeatures=2000)
@@ -62,7 +62,7 @@ def process_feedback_A(rdd):
 		global categ_fb_count
 		categ_fb_count +=1
 		if categ_fb_count >=3:
-			multiperceptron.save("perceptronModels.json")
+			multiperceptron.save("classification/models/perceptronModels.json")
 			categ_fb_count=1
         print "\n"
 
