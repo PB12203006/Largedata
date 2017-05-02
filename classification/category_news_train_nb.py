@@ -1,3 +1,11 @@
+"""
+/PATH-TO-SPARK/bin/spark-submit category_news_train_nb.py
+
+This script is to train a NaiveBayes Multiclass Model using news collected from New York Times in 2016 as training data.
+This news trained model only used for categorizing tweets regardless of correct feedback.
+by Yilan Ji
+
+"""
 from pyspark import SparkContext
 import numpy as np
 from pyspark.sql import SparkSession, Row
@@ -14,7 +22,7 @@ spark = SparkSession.builder \
         .appName("Word Count") \
         .config("spark.some.config.option", "some-value") \
         .getOrCreate()
-raw_data = sc.textFile("/Users/Jillian/Documents/Python/large_data_pj/news_sections_abstract2016.txt")
+raw_data = sc.textFile("data/news_sections_abstract2016.txt")
 lines = raw_data.map(lambda line: line.split("  ")).map(lambda line: (line[0]," ".join(line[1:])))
 sentenceData = spark.createDataFrame(lines,["label", "sentence"])
 

@@ -1,3 +1,17 @@
+"""
+/PATH-TO-SPARK/bin/spark-submit category_news_train_perceptron.py
+
+This is to train a news category multiclass perceptron model,
+whose weight vectors are used to initialize tweets category predict perceptron model in our web application.
+
+When runing, the perceptron model will be saved in "perceptronModels0.json" file
+
+Also testing the functions in perceptronMulticlass class: train/ save/ load/ predict...
+
+by Yilan Ji
+
+"""
+
 from pyspark import SparkContext
 import numpy as np
 from pyspark.sql import SparkSession, Row
@@ -16,7 +30,7 @@ spark = SparkSession.builder \
         .getOrCreate()
 
 numfeatures=2000
-raw_data = sc.textFile("/Users/Jillian/Documents/Python/large_data_pj/data/news_sections_abstract2016.txt")
+raw_data = sc.textFile("data/news_sections_abstract2016.txt")
 lines = raw_data.map(lambda line: line.split("  ")).map(lambda line: (line[0]," ".join(line[1:])))
 sentenceData = spark.createDataFrame(lines,["label", "sentence"])
 
@@ -41,7 +55,7 @@ dictionary = {'Art & Design':0,'World':1,'Sports':2,'Fashion & Style':3,'Books':
             'Health':13,'Travel':14,'Education':15,'Your Money':16,'Politics':17,'Economy':18}
 labeleddata = data0.select(data0.label.cast("double").alias('label'),'features').na.drop()
 labeleddata.cache()
-(train, test) = labeleddata.randomSplit([0.999, 0.001])
+(train, test) = labeleddata.randomSplit([0.8, 0.2])
 
 """
 Multiclass Perceptron
@@ -62,8 +76,8 @@ model_param = {}
 trainnum = trainlabels.count()
 testnum = testlabels.count()
 errors = []
-print trainnum
-"""
+print "number of training data: ", trainnum
+
 for i in range(numclasses):
     labelforone = trainlabels.map(lambda x: 1.0*(x==i)+(-1.0)*(x!=i))
     models.append(PerceptronforRDD(numFeatures=numfeatures))
@@ -97,37 +111,46 @@ for i in range(numclasses):
 
 errDF = sc.parallelize(errors).toDF()
 errDF.show()
-"""
+
 
 # Write the model to the perceptronModels.json file to save the trained model
-"""
-json_file = "perceptronModels.json"
+
+json_file = "perceptronModels0.json"
 with open(json_file, 'w') as outfile:
     json.dump(model_param, outfile)
 print "write models parameters to file complete"
-"""
+
 
 # Test the MulticlassPerceptron Class: train/ save/ load/ predict
-"""
+
+print "below is testing the multiclassperceptron functions: train/ save/ load/ predict............"
+trainlabels = trainlabels.map(lambda x: category[int(x)])
+
 multiclassperceptron = MulticlassPerceptron(dictionary=dictionary,category=category)
 print "training................"
-models = multiclassperceptron.train(traindata,trainlabels.map(lambda x: category[int(x)]))
+models = multiclassperceptron.train(traindata,trainlabels,method="Average", MaxItr=10)
 print "predicting.............."
-print multiclassperceptron.predict(traindata)
-"""
+print multiclassperceptron.predict(traindata)[:5]
 
-#multiclassperceptron.save("test0.json")
+multiclassperceptron.save("test0.json",average=True)
 
 loadperceptron0 = MulticlassPerceptron(dictionary=dictionary,category=category)
-loadmodels = loadperceptron0.load("perceptronModels.json",average=True)
-print loadperceptron0.predict(traindata)
+print "loading................"
+loadmodels = loadperceptron0.load("test0.json",average=True)
+print "predicting................"
+print loadperceptron0.predict(traindata)[:5]
 
 trainlabels = dataset.select('label').rdd.map(lambda row: category[int(row.label)])#.collect()
 fbtest = MulticlassPerceptron(dictionary=dictionary,category=category)
-models = fbtest.train(traindata,trainlabels,source="Feedback")
-print fbtest.predict(traindata)
-fbtest.save("test1.json")
+print "training................"
+models = fbtest.train(traindata,trainlabels,method="Online", MaxItr=10)
+print "predicting.............."
+print fbtest.predict(traindata)[:5]
+print "saving.................."
+fbtest.save("test1.json", average=False)
 
+print "loading................."
 loadperceptron1 = MulticlassPerceptron(dictionary=dictionary,category=category)
-loadmodels = loadperceptron1.load("test1.json",average=True)
-print loadperceptron1.predict(traindata)
+loadmodels = loadperceptron1.load("test1.json",average=False)
+print "predicting.............."
+print loadperceptron1.predict(traindata)[:5]

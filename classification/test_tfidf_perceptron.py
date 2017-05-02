@@ -7,6 +7,7 @@ from perceptron import PerceptronforRDD
 import numpy as np
 
 sc = SparkContext()
+sc.setLogLevel("ERROR")
 # Load documents (one per line).
 #documents = sc.textFile("tweets_test.txt").map(lambda line: line.split(" "))
 

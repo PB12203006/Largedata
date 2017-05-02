@@ -1,9 +1,22 @@
+"""
+python news_api.py
+
+Fetch news from New York Times in 2016 in selected 19 categories.
+['World','Sports','Fashion & Style','Books','Music', \
+            'Television','Movies','Technology','Science','Food','Real Estate','Theater', \
+            'Health','Travel','Education','Your Money','Politics','Economy','Art & Design']
+Save the {category, abstract} content in file "data/news_sections_abstract2016_.txt"
+
+by Yilan Ji
+
+"""
+
 import requests
 import json
 import sys
 reload(sys)
 sys.setdefaultencoding('UTF8')
-txt_file = "news_sections_abstract2016.txt"
+txt_file = "data/news_sections_abstract2016_.txt"
 try:
     outfile = open(txt_file, "w")
 except IOError as e:
@@ -72,10 +85,11 @@ sorted_sections = sorted(sections, key=sections.__getitem__)
 print json.dumps(content, indent=4)
 for x in sorted_sections:
     print (x, sections[x])
-print len(sections)
+print "number of classes: ",len(sections)
 #print json.dumps(sorted_sections, indent=4)
 outfile.close()
 """
+all categories:
 (u'Multimedia', 1)
 (u'Your Taxes', 1)
 (u'Learning', 1)
@@ -147,7 +161,7 @@ outfile.close()
 (u'Opinion', 7153)
 (u'World', 7259)
 70
-['World','Sports','Paid Death Notices','Fashion & Style','Books','Music','Television','Movies','Technology','Science','Food','Real Estate','Theater','Health','Travel','Education','Your Money','Politics','Economy','Art & Design']
+['World','Sports','Fashion & Style','Books','Music','Television','Movies','Technology','Science','Food','Real Estate','Theater','Health','Travel','Education','Your Money','Politics','Economy','Art & Design']
 
 """
 """

@@ -1,11 +1,10 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """
-@author: Jillian
-Upload filtered tweets from Twitter API to Kafka by KafkaProducer()
-classify based on text and sentiment(as label)
-train a perceptron model
-Send Notification if predict label is 1.0
+@author: Yilan Ji, Haoyan Min
+Upload tweets with positive sentiment from Twitter API to Kafka by KafkaProducer()
+
+
 """
 #Import the necessary methods from tweepy library
 from tweepy.streaming import StreamListener

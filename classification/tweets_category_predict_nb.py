@@ -1,3 +1,7 @@
+"""
+Load Multiclass NaiveBayes Model for predicting tweets category regardless of user feedback
+"""
+
 from pyspark import SparkContext
 import numpy as np
 from pyspark.sql import SparkSession, Row
@@ -10,7 +14,7 @@ category = ['Art & Design','World','Sports','Fashion & Style','Books','Music', \
             'Television','Movies','Technology','Science','Food','Real Estate','Theater', \
             'Health','Travel','Education','Your Money','Politics','Economy']
 def predictTweetCategNB(testtf,sc):
-    modelTweetCategoryNB = NaiveBayesModel.load("/home/pb12203006/Documents/Largedata_with_Princess/classification/NaiveBayes_model/")
+    modelTweetCategoryNB = NaiveBayesModel.load("NaiveBayes_model/")
     # select example rows to display.
     tt = sc.parallelize(testtf).map(lambda x: Row(features=x)).toDF()
     tt.show()

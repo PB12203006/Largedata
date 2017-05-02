@@ -1,5 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+"""
+Used to predict tweets sentiments
+
+"""
+
 import re
 from textblob import TextBlob
 
@@ -8,7 +13,7 @@ class Sentiments:
     NEGATIVE = 'Negative'
     NEUTRAL = 'Neutral'
     CONFUSED = 'Confused'
-    
+
 id_field = 'id_str'
 emoticons = {Sentiments.POSITIVE:'😀|😁|😂|😃|😄|😅|😆|😇|😈|😉|😊|😋|😌|😍|😎|😏|😗|😘|😙|😚|😛|😜|😝|😸|😹|😺|😻|😼|😽',
              Sentiments.NEGATIVE : '😒|😓|😔|😖|😞|😟|😠|😡|😢|😣|😤|😥|😦|😧|😨|😩|😪|😫|😬|😭|😾|😿|😰|😱|🙀',
@@ -16,7 +21,7 @@ emoticons = {Sentiments.POSITIVE:'😀|😁|😂|😃|😄|😅|😆|😇|😈|�
              Sentiments.CONFUSED: '😕'
              }
 
-tweet_mapping = {'properties': 
+tweet_mapping = {'properties':
                     {'timestamp': {
                                   'type': 'date'
                                   },
@@ -55,7 +60,7 @@ def _sentiment_analysis_by_emoticons(tweet):
         if len(matched_emoticons) > 0:
             #tweet['emoticons'].extend(matched_emoticons)
             tweet['sentiment'].append(sentiment)
-    
+
     if Sentiments.POSITIVE in tweet['sentiment'] and Sentiments.NEGATIVE in tweet['sentiment']:
         tweet['sentiment'] = Sentiments.CONFUSED
     elif Sentiments.POSITIVE in tweet['sentiment']:
@@ -73,13 +78,13 @@ def _sentiment_analysis_by_text(tweet):
     else:
         sentiment = Sentiments.POSITIVE
     tweet['sentiment'] = sentiment
-    
+
 def get_tweet(doc,count):
     tweet = doc
     tweet[id_field] = count
     #tweet['hashtags'] = map(lambda x: x['text'],doc['entities']['hashtags'])
     #tweet['coordinates'] = doc['coordinates']
-    #tweet['timestamp_ms'] = doc['timestamp_ms'] 
+    #tweet['timestamp_ms'] = doc['timestamp_ms']
     #tweet['text'] = doc['text']
     #tweet['user'] = {'id': doc['user']['id'], 'name': doc['user']['name']}
     #tweet['mentions'] = re.findall(r'@\w*', doc['text'])

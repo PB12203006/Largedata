@@ -1,3 +1,14 @@
+"""
+
+Binary Perceptron class: PerceptronforRDD
+To train an Online Perceptron model: PerceptronBatch(m,y,MaxItr=10) #m is RDD data, y is label {1, -1}
+To trian an Average Perceptron model: AveragePerceptron(data, label, MaxItr=10) #data is RDD data, label is label{1, -1}
+To predict: Predict(data) # input data is RDD with sparse vectors as elements
+
+by Yilan Ji
+
+"""
+
 import numpy as np
 import random
 from scipy.sparse import coo_matrix
@@ -66,12 +77,12 @@ class PerceptronforRDD():
             self.b = self.b+y.first()
         return [self.w, self.b]
 
-    def PerceptronBatch(self,m,y):
+    def PerceptronBatch(self,m,y,MaxItr=10):
 		y = y.map(lambda x: -1.0*(x==0.0 or x==-1.0)+(x==1.0)).collect()
 		m = m.collect()
 		ind = range(len(m))
 		random.shuffle(ind)
-		for time in range(5):
+		for time in range(MaxItr):
 			random.shuffle(ind)
 			for i in ind:
 				pred = m[i].dot(self.w)+self.b
@@ -100,7 +111,7 @@ class PerceptronforRDD():
 		self.b = self.b - self.beta_avg/self.count_avg
 		return [self.w,self.b]
 
-    def AveragePerceptron(self, data, label, MaxItr=3):
+    def AveragePerceptron(self, data, label, MaxItr=10):
 		label = label.map(lambda x: -1.0*(x==0.0 or x==-1.0)+(x==1.0))
 		label = label.collect()
 		#data=data.map(lambda x: x/sum(x))

@@ -1,3 +1,15 @@
+"""
+
+Multiclass Perceptron: MulticlassPerceptron
+initialize: numClasses=19, numFeatures=2000,dictionary={},category=[]
+To train the model: train(traindata,trainlabels,method="Average", MaxItr=10) # method can be one in {"Average", "Online"}
+To predict the label: predict(testtf)
+To save the trained model: save(path_json,average=True) # average if True will save the trained perceptron history
+To load the saved model: load(path_json,average=True) # avearge if True will load attributes that store the trained history before
+
+by Yilan Ji
+
+"""
 from perceptron import PerceptronforRDD
 import numpy as np
 import json
@@ -64,13 +76,16 @@ class MulticlassPerceptron():
         #print "number of load models:",len(perceptronModels)
         return self.models
 
-    def save(self,path_json):
+    def save(self,path_json,average=True):
         #json_file = "perceptronModels.json"
         models = self.models
         category = self.category
         model_param = {}
         for i in range(self.numClasses):
-            parameters = {"w":models[i].w.tolist(),"b":models[i].b,"u_avg":models[i].u_avg.tolist(),"beta_avg":models[i].beta_avg,"count_avg":models[i].count_avg}
+            if average==True:
+                parameters = {"w":models[i].w.tolist(),"b":models[i].b,"u_avg":models[i].u_avg.tolist(),"beta_avg":models[i].beta_avg,"count_avg":models[i].count_avg}
+            else:
+                parameters = {"w":models[i].w.tolist(),"b":models[i].b}
             model_param[category[i]]=parameters
         with open(path_json, 'w') as outfile:
             json.dump(model_param, outfile)

@@ -1,3 +1,13 @@
+"""
+
+/PATH-TO-SPARK/bin/spark-submit compare_Multiclass_Models.py
+
+Comparing the test error rate and confusion matrix of multiclass classification models:
+NaiveBayes; DecisionTree, RandomForest, One-vs-Rest (LogisticRegression), MulticlassPerceptron
+
+by Yilan Ji
+
+"""
 from pyspark import SparkContext
 import numpy as np
 from pyspark.sql import SparkSession, Row
@@ -15,7 +25,7 @@ spark = SparkSession.builder \
 numfeatures=2000
 numclasses = 19
 # Load news category data
-raw_data = sc.textFile("/Users/Jillian/Documents/Python/large_data_pj/data/news_sections_abstract2016.txt")
+raw_data = sc.textFile("data/news_sections_abstract2016.txt")
 lines = raw_data.map(lambda line: line.split("  ")).map(lambda line: (line[0]," ".join(line[1:])))
 sentenceData = spark.createDataFrame(lines,["label", "sentence"])
 

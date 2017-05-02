@@ -1,5 +1,9 @@
 """
-correct Tweets category
+Collect user feedback of correct Tweets category
+Storing the labels and data to compare performance of multiclass perceptron models with different parameters.
+
+by Yilan Ji
+
 """
 import json
 dictionary = {'Art & Design':0,'World':1,'Sports':2,'Fashion & Style':3,'Books':4,'Music':5, \
@@ -9,10 +13,10 @@ category = ['Art & Design','World','Sports','Fashion & Style','Books','Music', \
             'Television','Movies','Technology','Science','Food','Real Estate','Theater', \
             'Health','Travel','Education','Your Money','Politics','Economy']
 
-infile = open("/Users/Jillian/Documents/Python/large_data_pj/tweetsPredictCategory.txt", "r")
-outfile = open("/Users/Jillian/Documents/Python/large_data_pj/tweetsCorrectCategory.txt", "w")
-outfileind = open("/Users/Jillian/Documents/Python/large_data_pj/tweetsCorrectIndex.txt", "w")
-outfilepredict = open("/Users/Jillian/Documents/Python/large_data_pj/tweetsPredictCategory0.txt", "w")
+infile = open("data/tweetsPredictCategory.txt", "r")
+outfile = open("data/tweetsCorrectCategory.txt", "w")
+outfileind = open("data/tweetsCorrectIndex.txt", "w")
+outfilepredict = open("data/tweetsPredictCategory0.txt", "w")
 lines = infile.readlines()
 count = 0
 for i in range(len(lines)):
