@@ -20,7 +20,6 @@ import sys
 reload(sys)
 sys.setdefaultencoding('UTF8')
 from perceptron import PerceptronforRDD
-from tweets_category_predict_perceptron import predictTweetCategPerceptron
 from perceptronMulticlass import MulticlassPerceptron
 sc = SparkContext()
 spark = SparkSession.builder \
@@ -115,7 +114,7 @@ errDF.show()
 
 # Write the model to the perceptronModels.json file to save the trained model
 
-json_file = "perceptronModels0.json"
+json_file = "models/perceptronModels0.json"
 with open(json_file, 'w') as outfile:
     json.dump(model_param, outfile)
 print "write models parameters to file complete"
@@ -132,11 +131,11 @@ models = multiclassperceptron.train(traindata,trainlabels,method="Average", MaxI
 print "predicting.............."
 print multiclassperceptron.predict(traindata)[:5]
 
-multiclassperceptron.save("test0.json",average=True)
+multiclassperceptron.save("models/test0.json",average=True)
 
 loadperceptron0 = MulticlassPerceptron(dictionary=dictionary,category=category)
 print "loading................"
-loadmodels = loadperceptron0.load("test0.json",average=True)
+loadmodels = loadperceptron0.load("models/test0.json",average=True)
 print "predicting................"
 print loadperceptron0.predict(traindata)[:5]
 
@@ -147,10 +146,10 @@ models = fbtest.train(traindata,trainlabels,method="Online", MaxItr=10)
 print "predicting.............."
 print fbtest.predict(traindata)[:5]
 print "saving.................."
-fbtest.save("test1.json", average=False)
+fbtest.save("models/test1.json", average=False)
 
 print "loading................."
 loadperceptron1 = MulticlassPerceptron(dictionary=dictionary,category=category)
-loadmodels = loadperceptron1.load("test1.json",average=False)
+loadmodels = loadperceptron1.load("models/test1.json",average=False)
 print "predicting.............."
 print loadperceptron1.predict(traindata)[:5]

@@ -59,7 +59,7 @@ nb = NaiveBayes(smoothing=1.0, modelType="multinomial")
 
 model = nb.fit(train)
 #path = tempfile.mkdtemp()
-model.save("/Users/Jillian/Documents/Python/large_data_pj/NaiveBayes_model/")
+model.save("models/NaiveBayes_model/")
 #sameModel = NaiveBayesModel.load("/Users/Jillian/Documents/Python/large_data_pj/NaiveBayes_model/")
 
 # select example rows to display.
