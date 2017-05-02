@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request
 import requests,json
-import push_server_to_kafka
+import push_server_to_kafka as push
 import Pull_from_ES
 
 application = Flask(__name__)
