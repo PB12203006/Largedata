@@ -13,7 +13,7 @@ Compare the confusion matrix and test error rate of models
 
 >{NaiveBayes; SVMWithSGD; LogisticRegressionWithBFGS; OnlinePerceptron(Itr=1); AveragePerceptron(Itr=1);OnlinePerceptron(Itr=1)+AveragePerceptron(Itr=1);AveragePerceptron(Itr=5); AveragePerceptron(Itr=10)}
 
-![Screen Shot 2017-04-26 at 10.04.03 PM.png](quiver-image-url/FB972DDEF4E7CACBD22833704EE80828.png =910x357)
+![binary_200features.png](https://github.com/PB12203006/Largedata/blob/master/classification/pic/binary_200features.png)
 
 
 
@@ -27,7 +27,7 @@ When number of features is 2000:
 Compare the confusion matrix and test error rate of models
 >{NaiveBayes; SVMWithSGD; LogisticRegressionWithBFGS; OnlinePerceptron(Itr=1); AveragePerceptron(Itr=1);OnlinePerceptron(Itr=1)+AveragePerceptron(Itr=1);AveragePerceptron(Itr=5); AveragePerceptron(Itr=10)}
 
-![Screen Shot 2017-04-26 at 10.04.16 PM.png](quiver-image-url/D9EA1B4DA7AA7A012C1C1CF2B7738036.png =912x343)
+![binary_2000features.png](https://github.com/PB12203006/Largedata/blob/master/classification/pic/binary_2000features.png)
 
 
 
@@ -41,7 +41,7 @@ Lifting perceptron binary class models to MulticlassPerceptron using One-vs-Rest
 
 __Training error rate__
 
-![Screen Shot 2017-04-26 at 10.30.14 PM.png](quiver-image-url/1ECE761F895E1E3620983DCF0DC8EFCD.png =732x382)
+![multiclass_training_confusionMatrix.png](https://github.com/PB12203006/Largedata/blob/master/classification/pic/multiclass_training_confusionMatrix.png)
 
 
 -----
@@ -51,7 +51,7 @@ __Training error rate__
 __Data__: News from _NEW YORK TIMES_ in 2016 year, __{number of classes=19; number of features=2000}__
 
 
-![Screen Shot 2017-04-26 at 10.06.37 PM.png](quiver-image-url/00DB4177AED9A09F40E65B46231727F7.png =728x571)
+![multiclass_compare_test_confusionMatrix.png](https://github.com/PB12203006/Largedata/blob/master/classification/pic/multiclass_compare_test_confusionMatrix.png)
 
 
 
@@ -66,14 +66,15 @@ Predict categories of test tweets using models after online trained every 50 twe
 - AveragePerceptron model with weight initialized as trained model by news(but ignore weights history of 22223 news) 
 - AveragePerceptron model with weight initialized as trained model by news(and store weights history of 22223 news)
 
-![Screen Shot 2017-04-27 at 12.44.46 AM.png](quiver-image-url/51D08017F1CF1532A43C6C9FACCF2AC3.png =1120x274)
+![multiclass_code_compare_initial.png](https://github.com/PB12203006/Largedata/blob/master/classification/pic/multiclass_200/multiclass_code_compare_initial.png)
 
-![Screen Shot 2017-04-27 at 12.03.44 AM.png](quiver-image-url/AA97487CCD73DCD84B0ED5B7C86F37A5.png =1197x374)
-![Screen Shot 2017-04-27 at 12.04.02 AM.png](quiver-image-url/8CC6AA3907CFAA3778D2ACCA4E289F8B.png =1283x392)
-![Screen Shot 2017-04-27 at 12.04.20 AM.png](quiver-image-url/8802B70F486C7BF6A199F8B8A89B9994.png =1234x456)
-![Screen Shot 2017-04-27 at 12.05.40 AM.png](quiver-image-url/8F0F9BBC94AE78BFB8577FBE758A2722.png =1183x452)
-![Screen Shot 2017-04-27 at 12.05.52 AM.png](quiver-image-url/2359CE16BC686A9D942CF1728891E827.png =1285x452)
-![Screen Shot 2017-04-27 at 12.06.06 AM.png](quiver-image-url/A7A0AE7761F4DE5F706F78ED0F2B825F.png =1296x430)
+![tweets_Category.png](https://github.com/PB12203006/Largedata/blob/master/classification/pic/multiclass_200/tweets_Category.png)
+
+![multiclass_compare_initial_0.png](https://github.com/PB12203006/Largedata/blob/master/classification/pic/multiclass_200/multiclass_compare_initial_0.png)
+![multiclass_compare_initial_1.png](https://github.com/PB12203006/Largedata/blob/master/classification/pic/multiclass_200/multiclass_compare_initial_1.png)
+![multiclass_compare_initial_2.png](https://github.com/PB12203006/Largedata/blob/master/classification/pic/multiclass_200/multiclass_compare_initial_2.png)
+![multiclass_compare_initial_3.png](https://github.com/PB12203006/Largedata/blob/master/classification/pic/multiclass_200/multiclass_compare_initial_3.png)
+![multiclass_compare_initial_final.png](https://github.com/PB12203006/Largedata/blob/master/classification/pic/multiclass_200/multiclass_compare_initial_final.png)
 
 
 
@@ -88,11 +89,13 @@ Predict categories of test tweets using models after online trained every 100 tw
 - AveragePerceptron model with weight initialized as trained model by news(ignore history of News), iteration=1 
 - AveragePerceptron model with weight initialized as trained model by news(ignore history of News), iteration=10
 
-![Screen Shot 2017-04-27 at 10.25.59 AM.png](quiver-image-url/1688ACE4A62FE519734D6505DAFAFCB0.png =1207x266)
+![multiclass_code_400.png](https://github.com/PB12203006/Largedata/blob/master/classification/pic/multiclass_400/multiclass_code_400.png)
 
-![Screen Shot 2017-04-27 at 10.16.54 AM.png](quiver-image-url/DB090550CC92F84DEE7F8FEF61D20A28.png =1362x382)
-![Screen Shot 2017-04-27 at 4.19.32 PM.png](quiver-image-url/3DC3CCFB3E25638BABC32B18043D77B5.png =1415x689)
-![Screen Shot 2017-04-27 at 10.17.28 AM.png](quiver-image-url/20DA3154998A601ECF5EB747F66BCA44.png =1362x462)
-![Screen Shot 2017-04-27 at 10.17.42 AM.png](quiver-image-url/05D66CA29B1E18C936F6D525854A08A2.png =1341x456)
-![Screen Shot 2017-04-27 at 10.17.56 AM.png](quiver-image-url/87E7689A5DB368DF8B6161BD4209A208.png =1329x455)
-![Screen Shot 2017-04-27 at 10.18.08 AM.png](quiver-image-url/6F3E7A2B819A9CE51216BAADD535FF09.png =1352x444)
+![tweets_category.png](https://github.com/PB12203006/Largedata/blob/master/classification/pic/multiclass_400/tweets_category.png)
+
+![multiclass_400_compare_0.png](https://github.com/PB12203006/Largedata/blob/master/classification/pic/multiclass_400/multiclass_400_compare_0.png)
+![multiclass_400_compare_1.png](https://github.com/PB12203006/Largedata/blob/master/classification/pic/multiclass_400/multiclass_400_compare_1.png)
+![multiclass_400_compare_2.png](https://github.com/PB12203006/Largedata/blob/master/classification/pic/multiclass_400/multiclass_400_compare_2.png)
+![multiclass_400_compare_3.png](https://github.com/PB12203006/Largedata/blob/master/classification/pic/multiclass_400/multiclass_400_compare_3.png)
+![multiclass_400_compare_final.png](https://github.com/PB12203006/Largedata/blob/master/classification/pic/multiclass_400/multiclass_400_compare_final.png)
+
