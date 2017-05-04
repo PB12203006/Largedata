@@ -2,6 +2,8 @@
 
 1. Run Zookeeper and Kafka
 
+We use default settings of zookeeper and kafka, if you have changed properties, use the two properties files in the directory.
+
 `$ <PATH_to_Kafka>/bin/zookeeper-server-start.sh config/zookeeper.properties`
 
 `$ <PATH_to_Kafka>/bin/kafka-server-start.sh config/server.properties`
