@@ -16,7 +16,7 @@ import json
 import string
 import random
 import time
-import classification.tweet_utils
+import classification.tweet_utils as tweet_utils
 
 # change default system encoding method of python into UTF-8
 import sys
