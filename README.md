@@ -22,5 +22,10 @@
 
 4. Run Streaming by spark
 
+Make sure the terminal is in the directory of file Run_Streaming.py because there are some relative directories in code.
+
+On my computer, each time the computer restarts, running this file will fail twice at the beginning with errors that the topic "feedback_B" and "feedback_A" does not exist, respectively, but it will run successfully since the third time.
+
 `$ <PATH_to_Spark>/bin/spark-submit --packages org.apache.spark:spark-streaming-kafka-0-8_2.11:2.1.0 --master local[8] Run_Streaming.py` 
 
+Additionally, the folder classification contains the ML research part of our project, please take a look at the readme.md inside.
