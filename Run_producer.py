@@ -27,10 +27,10 @@ from kafka import KafkaProducer
 from kafka.errors import KafkaError
 
 #Variables that contains the user credentials to access Twitter API
-access_token = "***REMOVED***"
-access_token_secret = "***REMOVED***"
-consumer_key = "***REMOVED***"
-consumer_secret = "***REMOVED***"
+access_token = "*"
+access_token_secret = "*"
+consumer_key = "*"
+consumer_secret = "*"
 
 #This is a listener that process received tweets to stdout.
 class TwitterListener(StreamListener):
